@@ -1,0 +1,126 @@
+<html>
+<head>
+    <title>Network | Basic usage</title>
+
+    <script type="text/javascript" src="bower_components/vis/dist/vis.js"></script>
+    <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+    <link href="bower_components/vis/dist/vis.css" rel="stylesheet" type="text/css" />
+    <link href="css/spinner.css" rel="stylesheet" type="text/css" />
+
+    <style type="text/css">
+        #mynetwork {
+            width: 500px;
+            height: 500px;
+            background-color: #444444;
+        }
+        body {
+            background-color: #444444;
+            border: 1px solid gray;
+            -webkit-border-radius: 2px;
+            -moz-border-radius: 2px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="mynetwork"></div>
+<div class="spinner-loader" id="spinner" style="display:none;">
+
+</div>
+
+<script type="text/javascript">
+    /*
+    function drawGraph() {
+        // create an array with nodes
+        var nodes = new vis.DataSet([
+            {id: 1, label: 'Node 1'},
+            {id: 2, label: 'Node 2'},
+            {id: 3, label: 'Node 3'},
+            {id: 4, label: 'Node 4'},
+            {id: 5, label: 'Node 5'}
+        ]);
+
+        // create an array with edges
+        var edges = new vis.DataSet([
+            {from: 1, to: 3},
+            {from: 1, to: 2},
+            {from: 2, to: 4},
+            {from: 2, to: 5}
+        ]);
+
+        // create a network
+        var container = document.getElementById('mynetwork');
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {};
+        var network = new vis.Network(container, data, options);
+    }
+    */
+
+    var container = document.getElementById("mynetwork");
+    var spinner = $("#spinner");
+    var network = null;
+    var nodes = null;
+    var edges = null;
+
+    function drawGraph(nodesJSONString, edgesJSONString) {
+        nodes = new vis.DataSet(JSON.parse(nodesJSONString));
+        edges = new vis.DataSet(JSON.parse(edgesJSONString));
+        // create a network
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {};
+
+        network = new vis.Network(container, data, options);
+        network.on("click", function (params) {
+            params.event = "[original event]";
+            java.call(JSON.stringify(params));
+        });
+
+    }
+
+    function scenarioSelected() {
+        if (network !== null) {
+            network.destroy();
+            network = null;
+        }
+    }
+
+    function onInterest(edgeJsonString) {
+        var edge = JSON.parse(edgeJsonString);
+        var id1 = edge.from + "-" + edge.to;
+        edges.update({id: id1, color: '#008800', arrows: {to: {enabled : true }}});
+        var id2 = edge.to + "-" + edge.from;
+        edges.update({id: id2, color: '#008800', arrows: {from: {enabled : true }}});
+
+    }
+
+    function onInterestFinished(edgeJsonString) {
+        var edge = JSON.parse(edgeJsonString);
+        var id1 = edge.from + "-" + edge.to;
+        edges.update({id: id1, color: '#2F75D5', arrows: {to: {enabled : false }}});
+        var id2 = edge.to + "-" + edge.from;
+        edges.update({id: id2, color: '#2F75D5', arrows: {from: {enabled : false }}});
+
+    }
+
+    function updateInterests(from, to, scaleFactor) {
+        var id1 = from + "-" + to;
+        //var id2 = to + "-" + from;
+
+        if (scaleFactor == 0) {
+            edges.update({id: id1, color: '#2F75D5', arrows: {to: {enabled : false }}});
+        } else {
+            edges.update({id: id1, color: '#008800', arrows: {to: {enabled : true, scaleFactor: Math.min(Math.max(0.2, scaleFactor), 2.0) }}});
+        }
+    }
+
+</script>
+
+</body>
+</html>
