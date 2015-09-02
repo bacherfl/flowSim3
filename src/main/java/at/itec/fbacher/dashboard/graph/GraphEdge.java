@@ -4,29 +4,29 @@ package at.itec.fbacher.dashboard.graph;
  * Created by florian on 02.09.2015.
  */
 class GraphEdge {
-    private int from;
-    private int to;
+    private String from;
+    private String to;
     private String id;
 
-    public GraphEdge(int from, int to, String id) {
+    public GraphEdge(String from, String to, String id) {
         this.from = from;
         this.to = to;
         this.id = id;
     }
 
-    public int getFrom() {
+    public String getFrom() {
         return from;
     }
 
-    public void setFrom(int from) {
+    public void setFrom(String from) {
         this.from = from;
     }
 
-    public int getTo() {
+    public String getTo() {
         return to;
     }
 
-    public void setTo(int to) {
+    public void setTo(String to) {
         this.to = to;
     }
 

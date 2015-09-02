@@ -171,8 +171,8 @@ public class GraphPresenter implements Initializable, EventSubscriber {
 
     private void handleLinkCreatedEvent(LinkCreatedEvent evt) {
         LinkCreatedEvent lce = evt;
-        int from = lce.getLink().getF1().getNode().getId();
-        int to = lce.getLink().getF2().getNode().getId();
+        String from = lce.getLink().getF1().getNode().getId();
+        String to = lce.getLink().getF2().getNode().getId();
         String id = new StringBuilder().append(from).append("-").append(to).toString();
         String id2 = new StringBuilder().append(to).append("-").append(from).toString();
         graphEdges.add(new GraphEdge(from, to, id));

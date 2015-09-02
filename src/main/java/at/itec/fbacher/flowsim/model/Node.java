@@ -19,7 +19,7 @@ public class Node {
     private static int nextNodeId = 0;
     private int nextFaceId = 0;
 
-    private int id;
+    private String id;
 
     private List<Face> faces = new ArrayList<>();
 
@@ -29,7 +29,7 @@ public class Node {
     private PendingInterestTable pit = new PendingInterestTable();
 
     public Node() {
-        id = nextNodeId++;
+        id = "" + nextNodeId++;
         pit.setNode(this);
         Face appFace = new Face();
         addFace(appFace);
@@ -55,11 +55,11 @@ public class Node {
         faces.forEach(forwardingStrategy::addFace);
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

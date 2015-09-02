@@ -28,16 +28,16 @@ public class HelloScenario implements Scenario {
         NodeContainer nc = new NodeContainer(20);
         nc.getNodes().forEach(node -> {
             App app;
-            if (node.getId() == 0 || node.getId() == 4 || node.getId() == 8) {
+            if (node.getId().equals("0") || node.getId().equals("4") || node.getId().equals("8")) {
                 app = new SimpleConsumer(true, "/name", 100000);
-            } else if (node.getId() == 2) {
+            } else if (node.getId().equals("2")) {
                 app = new SimpleConsumer(true, "/name");
-            } else if (node.getId() == 19 || node.getId() == 16) {
+            } else if (node.getId().equals("19") || node.getId().equals("16")) {
                 app = new SimpleProducer("/name");
             } else {
                 app = new SimpleConsumer();
             }
-            if (node.getId() == 2)
+            if (node.getId().equals("2"))
                 app.startAt(450);
             else
                 app.startAt(1);

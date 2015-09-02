@@ -5,15 +5,15 @@ package at.itec.fbacher.flowsim.events;
  */
 public class PacketDroppedEvent extends ApplicationEvent {
 
-    private final int node;
+    private final String node;
     private final int faceId;
 
-    public PacketDroppedEvent(int node, int faceId) {
+    public PacketDroppedEvent(String node, int faceId) {
         this.node = node;
         this.faceId = faceId;
     }
 
-    public int getNode() {
+    public String getNode() {
         return node;
     }
 

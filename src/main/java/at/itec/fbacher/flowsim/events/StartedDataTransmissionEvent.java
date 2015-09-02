@@ -5,19 +5,19 @@ package at.itec.fbacher.flowsim.events;
  */
 public class StartedDataTransmissionEvent extends ApplicationEvent {
 
-    private int from;
-    private int to;
+    private String from;
+    private String to;
 
-    public StartedDataTransmissionEvent(int from, int to) {
+    public StartedDataTransmissionEvent(String from, String to) {
         this.from = from;
         this.to = to;
     }
 
-    public int getFrom() {
+    public String getFrom() {
         return from;
     }
 
-    public int getTo() {
+    public String getTo() {
         return to;
     }
 }
