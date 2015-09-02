@@ -23,23 +23,22 @@ package at.itec.fbacher.dashboard;
 import at.itec.fbacher.dashboard.graph.GraphView;
 import at.itec.fbacher.flowsim.events.*;
 import at.itec.fbacher.flowsim.model.Scenario;
-import at.itec.fbacher.flowsim.scenarios.HelloScenario;
+import at.itec.fbacher.flowsim.model.ScenarioFactory;
+import at.itec.fbacher.flowsim.model.ImportedScenarioFactory;
 import at.itec.fbacher.flowsim.sim.FormattedTime;
 import at.itec.fbacher.flowsim.sim.Simulator;
-import com.sun.javafx.tk.Toolkit;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.stage.FileChooser;
 import javafx.util.Duration;
-import sun.rmi.runtime.Log;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -99,12 +98,22 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         launch.setDisable(true);
-        MenuItem item1 = new MenuItem("Hello");
-        item1.setOnAction(event -> {
-            selectScenario.setText("Hello");
-            loadScenario(new HelloScenario());
+
+        List<String> scenarios = new ArrayList<>();
+        scenarios.add("HelloScenario");
+
+        scenarios.forEach(scenarioName -> {
+            MenuItem item = new MenuItem(scenarioName);
+            item.setOnAction(event -> {
+                selectScenario.setText(scenarioName);
+                loadScenario(scenarioName);
+            });
+            selectScenario.getItems().addAll(item);
         });
-        selectScenario.getItems().addAll(item1);
+
+        MenuItem importFileItem = new MenuItem("Import from file...");
+        importFileItem.setOnAction(event -> importScenario());
+        selectScenario.getItems().addAll(importFileItem);
         GraphView graphView = new GraphView();
         graphView.getView(lightsBox.getChildren()::add);
 
@@ -123,20 +132,44 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
         });
     }
 
-    private void loadScenario(Scenario scenario) {
-        EventPublisher.getInstance().publishEvent(new ScenarioSelectedEvent());
-        launch.setDisable(false);
-        currentScenario = scenario;
-        scenario.initialize();
+    private void importScenario() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open Resource File");
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("DAT files (*.dat)", "*.dat");
+        fileChooser.getExtensionFilters().add(extFilter);
+        File scenarioFile = fileChooser.showOpenDialog(speedupLabel.getScene().getWindow());
+        if (scenarioFile != null) {
+            ImportedScenarioFactory scenarioFactory = new ImportedScenarioFactory();
+            Scenario scenario = scenarioFactory.createScenario(scenarioFile);
 
-        updateSpeedupLabel();
+            initializeScenario(scenario);
+        }
+    }
 
-        simControlElements.stream().forEach(c -> {
-            FadeTransition ft = new FadeTransition(Duration.millis(300), c);
-            ft.setFromValue(0.0);
-            ft.setToValue(1.0);
-            ft.play();
-        });
+    private void loadScenario(String scenarioStr) {
+        ScenarioFactory scenarioFactory = new ScenarioFactory();
+        Scenario scenario = scenarioFactory.createScenario(scenarioStr);
+
+        initializeScenario(scenario);
+
+    }
+
+    private void initializeScenario(Scenario scenario) {
+        if (scenario != null) {
+            EventPublisher.getInstance().publishEvent(new ScenarioSelectedEvent());
+            launch.setDisable(false);
+            currentScenario = scenario;
+            scenario.initialize();
+
+            updateSpeedupLabel();
+
+            simControlElements.stream().forEach(c -> {
+                FadeTransition ft = new FadeTransition(Duration.millis(300), c);
+                ft.setFromValue(0.0);
+                ft.setToValue(1.0);
+                ft.play();
+            });
+        }
     }
 
     private void updateSpeedupLabel() {
