@@ -4,6 +4,7 @@ import at.itec.fbacher.flowsim.events.EventPublisher;
 import at.itec.fbacher.flowsim.events.TopologyFinishedEvent;
 import at.itec.fbacher.flowsim.extensions.app.SimpleConsumer;
 import at.itec.fbacher.flowsim.extensions.app.SimpleProducer;
+import at.itec.fbacher.flowsim.extensions.strategies.BroadcastStrategy;
 import at.itec.fbacher.flowsim.extensions.strategies.LearningStrategy;
 import at.itec.fbacher.flowsim.model.Scenario;
 import at.itec.fbacher.flowsim.model.app.App;
@@ -24,17 +25,16 @@ public class HelloScenario implements Scenario {
     @Override
     public void initialize() {
         Simulator s = Simulator.getInstance();
-        NodeContainer nc = new NodeContainer(4);
+        NodeContainer nc = new NodeContainer(20);
         nc.getNodes().forEach(node -> {
             App app;
-            if (node.getId() == 0) {
-                app = new SimpleConsumer(true, "/name", 1000000);
+            if (node.getId() == 0 || node.getId() == 4 || node.getId() == 8) {
+                app = new SimpleConsumer(true, "/name", 100000);
             } else if (node.getId() == 2) {
                 app = new SimpleConsumer(true, "/name");
-            } else if(node.getId() == 3) {
+            } else if (node.getId() == 19 || node.getId() == 16) {
                 app = new SimpleProducer("/name");
-            }
-            else {
+            } else {
                 app = new SimpleConsumer();
             }
             if (node.getId() == 2)
@@ -48,9 +48,30 @@ public class HelloScenario implements Scenario {
         TopologyHelper th = new TopologyHelper();
 
         th.addLink(nc.getNodes().get(0), nc.getNodes().get(1));
-        th.addLink(nc.getNodes().get(0), nc.getNodes().get(2));
+        th.addLink(nc.getNodes().get(0), nc.getNodes().get(3));
         th.addLink(nc.getNodes().get(1), nc.getNodes().get(3));
         th.addLink(nc.getNodes().get(1), nc.getNodes().get(2));
+        th.addLink(nc.getNodes().get(3), nc.getNodes().get(5));
+        th.addLink(nc.getNodes().get(3), nc.getNodes().get(7));
+        th.addLink(nc.getNodes().get(4), nc.getNodes().get(5));
+        th.addLink(nc.getNodes().get(5), nc.getNodes().get(7));
+        th.addLink(nc.getNodes().get(5), nc.getNodes().get(6));
+        th.addLink(nc.getNodes().get(7), nc.getNodes().get(8));
+        th.addLink(nc.getNodes().get(7), nc.getNodes().get(9));
+        th.addLink(nc.getNodes().get(9), nc.getNodes().get(10));
+        th.addLink(nc.getNodes().get(8), nc.getNodes().get(12));
+
+        th.addLink(nc.getNodes().get(10), nc.getNodes().get(11));
+        th.addLink(nc.getNodes().get(10), nc.getNodes().get(13));
+        th.addLink(nc.getNodes().get(11), nc.getNodes().get(13));
+        th.addLink(nc.getNodes().get(11), nc.getNodes().get(12));
+        th.addLink(nc.getNodes().get(13), nc.getNodes().get(15));
+        th.addLink(nc.getNodes().get(13), nc.getNodes().get(17));
+        th.addLink(nc.getNodes().get(14), nc.getNodes().get(15));
+        th.addLink(nc.getNodes().get(15), nc.getNodes().get(17));
+        th.addLink(nc.getNodes().get(15), nc.getNodes().get(16));
+        th.addLink(nc.getNodes().get(17), nc.getNodes().get(18));
+        th.addLink(nc.getNodes().get(17), nc.getNodes().get(19));
 
         EventPublisher.getInstance().publishEvent(new TopologyFinishedEvent());
 

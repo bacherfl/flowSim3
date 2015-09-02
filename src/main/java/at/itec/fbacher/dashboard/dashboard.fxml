@@ -29,13 +29,13 @@
                   <Insets left="5.0" right="5.0" />
                </HBox.margin>
             </Label>
-            <Label fx:id="currentTimeLabel" styleClass="label-small" text="--:--" prefWidth="100.0"/>
-            <Slider fx:id="speedupSlider" value="1.0" min="1.0" max="100.0">
+            <Label fx:id="currentTimeLabel" styleClass="label-small" text="--:--" prefWidth="80.0"/>
+            <Slider fx:id="speedupSlider" value="10.0" min="1.0" max="100.0">
                <HBox.margin>
                   <Insets left="5.0" right="5.0" />
                </HBox.margin>
             </Slider>
-
+                 <Label fx:id="speedupLabel" styleClass="label-small" text=""/>
              </children>
           </HBox>
 

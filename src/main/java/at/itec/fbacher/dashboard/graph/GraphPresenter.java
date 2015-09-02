@@ -1,22 +1,17 @@
 package at.itec.fbacher.dashboard.graph;
 
 import at.itec.fbacher.flowsim.events.*;
+import at.itec.fbacher.flowsim.model.Data;
 import at.itec.fbacher.flowsim.model.Interest;
-import at.itec.fbacher.flowsim.sim.FormattedTime;
 import at.itec.fbacher.flowsim.sim.Simulator;
 import com.google.gson.Gson;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
-
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 
 import java.net.URL;
 import java.util.*;
@@ -33,7 +28,8 @@ public class GraphPresenter implements Initializable, EventSubscriber {
     List<GraphNode> graphNodes = new ArrayList<>();
     List<GraphEdge> graphEdges = new ArrayList<>();
 
-    Map<String, AtomicInteger> sentInterests = new HashMap<>();
+    private Map<String, AtomicInteger> sentInterests = new HashMap<>();
+    private Map<String, AtomicInteger> sentData = new HashMap<>();
     private boolean simulationRunning = false;
     private Task<Void> updateGraphTask;
     private Thread updateGraphThread;
@@ -46,6 +42,8 @@ public class GraphPresenter implements Initializable, EventSubscriber {
         EventPublisher.getInstance().register(this, ScenarioLoadedEvent.class);
         EventPublisher.getInstance().register(this, StartedInterestTransmissionEvent.class);
         EventPublisher.getInstance().register(this, FinishedInterestTransmissionEvent.class);
+        EventPublisher.getInstance().register(this, StartedDataTransmissionEvent.class);
+        EventPublisher.getInstance().register(this, FinishedDataTransmissionEvent.class);
         EventPublisher.getInstance().register(this, ScenarioStartedEvent.class);
         WebEngine webEngine = web.getEngine();
         String resource = getClass().getClassLoader().getResource("graph.html").toExternalForm();
@@ -79,9 +77,30 @@ public class GraphPresenter implements Initializable, EventSubscriber {
         else if (evt instanceof FinishedInterestTransmissionEvent) {
             handleFinishedInterestTransmissionEvent((FinishedInterestTransmissionEvent) evt);
         }
+        else if (evt instanceof StartedDataTransmissionEvent) {
+            handleStartedDataTransmissionEvent((StartedDataTransmissionEvent) evt);
+        }
+        else if (evt instanceof FinishedDataTransmissionEvent) {
+            handleFinishedDataTransmissionEvent((FinishedDataTransmissionEvent) evt);
+        }
+        else if (evt instanceof PacketDroppedEvent) {
+            handlePacketDroppedEvent((PacketDroppedEvent) evt);
+        }
         else if (evt instanceof ScenarioStartedEvent) {
             handleScenarioStartedEvent();
         }
+    }
+
+    private void handlePacketDroppedEvent(PacketDroppedEvent evt) {
+    }
+
+    private void handleFinishedDataTransmissionEvent(FinishedDataTransmissionEvent evt) {
+
+    }
+
+    private void handleStartedDataTransmissionEvent(StartedDataTransmissionEvent evt) {
+        String id = new StringBuilder().append(evt.getFrom()).append("-").append(evt.getTo()).toString();
+        sentData.get(id).getAndIncrement();
     }
 
     private void handleScenarioStartedEvent() {
@@ -91,16 +110,8 @@ public class GraphPresenter implements Initializable, EventSubscriber {
             public Void call() throws Exception {
                 while (simulationRunning) {
                     Platform.runLater(() -> {
-                        sentInterests.keySet().forEach(id -> {
-                            String[] split = id.split("-");
-                            double bandwidth = (sentInterests.get(id).get() * 5 * Interest.INTEREST_SIZE * 8) /
-                                    Simulator.getInstance().getSpeedupFactor();
-                            double scaleFactor = (bandwidth + 0.0) / (1000000);
 
-                            String jsCmd = "updateInterests(" + split[0] + ", " + split[1] + ", " + scaleFactor + ")";
-                            web.getEngine().executeScript(jsCmd);
-                            sentInterests.get(id).set(0);
-                        });
+                        updateBandwidthOnGraphEdges();
 
                     });
                     Thread.sleep(200);
@@ -113,25 +124,36 @@ public class GraphPresenter implements Initializable, EventSubscriber {
         updateGraphThread.start();
     }
 
+    private void updateBandwidthOnGraphEdges() {
+        sentInterests.keySet().forEach(id -> {
+            String[] split = id.split("-");
+
+            double dataBandwidth = (sentData.get(id).get() * 5 * Data.DATA_SIZE * 8) /
+                    Simulator.getInstance().getSpeedupFactor();
+            double interestBandwidth = (sentInterests.get(id).get() * 5 * Interest.INTEREST_SIZE * 8) /
+                    Simulator.getInstance().getSpeedupFactor();
+
+            double bandwidth = dataBandwidth + interestBandwidth;
+
+            double scaleFactor = (bandwidth + 0.0) / (1000000);
+
+            String jsCmd = "updateInterests(" + split[0] + ", " + split[1] + ", " + scaleFactor + ")";
+            web.getEngine().executeScript(jsCmd);
+            sentInterests.get(id).set(0);
+            sentData.get(id).set(0);
+        });
+    }
+
+    private void updateDroppedPacketsOnNodes() {
+
+    }
+
     private void handleFinishedInterestTransmissionEvent(FinishedInterestTransmissionEvent evt) {
-        /*
-        String id = new StringBuilder().append(evt.getFrom()).append("-").append(evt.getTo()).toString();
-        GraphEdge edge = new GraphEdge(evt.getFrom(), evt.getTo(), id);
-        Gson gson = new Gson();
-        String jsCmd = "onInterestFinished('" + gson.toJson(edge) + "')";
-        Platform.runLater(() -> web.getEngine().executeScript(jsCmd));
-        */
     }
 
     private void handleStartedInterestTransmissionEvent(StartedInterestTransmissionEvent evt) {
         String id = new StringBuilder().append(evt.getFrom()).append("-").append(evt.getTo()).toString();
         sentInterests.get(id).getAndIncrement();
-        /*
-        GraphEdge edge = new GraphEdge(evt.getFrom(), evt.getTo(), id);
-        Gson gson = new Gson();
-        String jsCmd = "onInterest('" + gson.toJson(edge) + "')";
-        Platform.runLater(() -> web.getEngine().executeScript(jsCmd));
-        */
     }
 
     private void handleScenarioSelectedEvent() {
@@ -157,6 +179,8 @@ public class GraphPresenter implements Initializable, EventSubscriber {
         graphEdges.add(new GraphEdge(to, from, id2));
         sentInterests.put(id, new AtomicInteger(0));
         sentInterests.put(id2, new AtomicInteger(0));
+        sentData.put(id, new AtomicInteger(0));
+        sentData.put(id2, new AtomicInteger(0));
 
         final boolean[] contains = {false, false};
         graphNodes.stream().forEach(node -> {
@@ -180,67 +204,6 @@ public class GraphPresenter implements Initializable, EventSubscriber {
         }
     }
 
-    class GraphNode {
-        private int id;
-        private String label;
-
-        public GraphNode(int id, String label) {
-            this.id = id;
-            this.label = label;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public void setId(int id) {
-            this.id = id;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public void setLabel(String label) {
-            this.label = label;
-        }
-    }
-
-    class GraphEdge {
-        private int from;
-        private int to;
-        private String id;
-
-        public GraphEdge(int from, int to, String id) {
-            this.from = from;
-            this.to = to;
-            this.id = id;
-        }
-
-        public int getFrom() {
-            return from;
-        }
-
-        public void setFrom(int from) {
-            this.from = from;
-        }
-
-        public int getTo() {
-            return to;
-        }
-
-        public void setTo(int to) {
-            this.to = to;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-    }
 }
 
 

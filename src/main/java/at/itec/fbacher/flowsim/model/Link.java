@@ -1,9 +1,7 @@
 package at.itec.fbacher.flowsim.model;
 
 
-import at.itec.fbacher.flowsim.events.EventPublisher;
-import at.itec.fbacher.flowsim.events.FinishedInterestTransmissionEvent;
-import at.itec.fbacher.flowsim.events.StartedInterestTransmissionEvent;
+import at.itec.fbacher.flowsim.events.*;
 import at.itec.fbacher.flowsim.sim.Scheduler;
 
 /**
@@ -84,7 +82,7 @@ public class Link {
             return;
         if (tokenBucket != null) {
             if (!tokenBucket.consumeToken(packet)) {
-                System.out.println("Dropped Packet!!");
+                EventPublisher.getInstance().publishEvent(new PacketDroppedEvent(f.getNode().getId(), f.getFaceId()));
                 droppedPackets++;
                 f.droppedPacket(packet);
                 return;
@@ -99,27 +97,45 @@ public class Link {
         final Face finalTarget = target;
         long actualDelay = Math.max(1, (long) (delay + (Math.random() * 30 - 15))); //introduce some variance to delay
         if (packet instanceof Data) {
-            if (delay > 0)
-                Scheduler.getInstance().scheduleEventIn(actualDelay, () -> finalTarget.receiveData((Data) packet));
-            else
-                finalTarget.receiveData((Data) packet);
+            transmitData((Data) packet, f, target, finalTarget, actualDelay);
         }
         else if (packet instanceof Interest) {
-            if (!(f.isAppFace()) && !(target.isAppFace())) {
-                EventPublisher.getInstance().publishEvent(
-                        new StartedInterestTransmissionEvent(f.getNode().getId(), target.getNode().getId()));
-            }
-            if (delay > 0)
-                Scheduler.getInstance().scheduleEventIn(actualDelay, () -> {
-                    finalTarget.receiveInterest((Interest) packet);
-                    if (!(f.isAppFace()) && !(target.isAppFace())) {
-                        EventPublisher.getInstance().publishEvent(
-                                new FinishedInterestTransmissionEvent(f.getNode().getId(), target.getNode().getId()));
-                    }
-                });
-            else
-                finalTarget.receiveInterest((Interest) packet);
+            transmitInterest((Interest) packet, f, target, finalTarget, actualDelay);
         }
+    }
+
+    private void transmitData(Data packet, Face f, Face target, Face finalTarget, long actualDelay) {
+        if (!(f.isAppFace()) && !(target.isAppFace())) {
+            EventPublisher.getInstance().publishEvent(
+                    new StartedDataTransmissionEvent(f.getNode().getId(), target.getNode().getId()));
+        }
+        if (delay > 0)
+            Scheduler.getInstance().scheduleEventIn(actualDelay, () -> {
+                finalTarget.receiveData(packet);
+                if (!(f.isAppFace()) && !(target.isAppFace())) {
+                    EventPublisher.getInstance().publishEvent(
+                            new FinishedDataTransmissionEvent(f.getNode().getId(), target.getNode().getId()));
+                }
+            });
+        else
+            finalTarget.receiveData(packet);
+    }
+
+    private void transmitInterest(Interest packet, Face f, Face target, Face finalTarget, long actualDelay) {
+        if (!(f.isAppFace()) && !(target.isAppFace())) {
+            EventPublisher.getInstance().publishEvent(
+                    new StartedInterestTransmissionEvent(f.getNode().getId(), target.getNode().getId()));
+        }
+        if (delay > 0)
+            Scheduler.getInstance().scheduleEventIn(actualDelay, () -> {
+                finalTarget.receiveInterest(packet);
+                if (!(f.isAppFace()) && !(target.isAppFace())) {
+                    EventPublisher.getInstance().publishEvent(
+                            new FinishedInterestTransmissionEvent(f.getNode().getId(), target.getNode().getId()));
+                }
+            });
+        else
+            finalTarget.receiveInterest(packet);
     }
 
     public int getDroppedPackets() {

@@ -84,6 +84,9 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
     @FXML
     Slider speedupSlider;
 
+    @FXML
+    Label speedupLabel;
+
     Scenario currentScenario;
 
     Thread updateSimTimeThread;
@@ -111,6 +114,7 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
         simControlElements.add(simTimeLabel);
         simControlElements.add(currentTimeLabel);
         simControlElements.add(speedupSlider);
+        simControlElements.add(speedupLabel);
 
         simControlElements.parallelStream().forEach(c -> c.setOpacity(0.0));
 
@@ -125,12 +129,20 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
         currentScenario = scenario;
         scenario.initialize();
 
+        updateSpeedupLabel();
+
         simControlElements.stream().forEach(c -> {
             FadeTransition ft = new FadeTransition(Duration.millis(300), c);
             ft.setFromValue(0.0);
             ft.setToValue(1.0);
             ft.play();
         });
+    }
+
+    private void updateSpeedupLabel() {
+        int tmp = (int) (speedupSlider.getValue() * 100);
+        String speedupLabelText = "Speedup = " + tmp / 100.0 + " x Realtime";
+        speedupLabel.setText(speedupLabelText);
     }
 
     public void launch() {
@@ -181,5 +193,6 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
 
     public void changeSpeedup(Number newValue) {
         Simulator.getInstance().setSpeedupFactor(newValue.doubleValue());
+        updateSpeedupLabel();
     }
 }

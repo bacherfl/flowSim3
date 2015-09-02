@@ -21,7 +21,7 @@ public class Simulator extends Observable {
     private long simulationLength;  //1 tick := 0.1ms
 
 
-    private double speedupFactor = 1.0; //10 times faster than realtime
+    private double speedupFactor = 10.0; //10 times faster than realtime
 
     private static Simulator instance;
 
