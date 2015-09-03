@@ -1,11 +1,10 @@
 package at.itec.fbacher.flowsim.scenarios;
 
-import at.itec.fbacher.flowsim.model.DatFileParser;
+import at.itec.fbacher.flowsim.events.EventPublisher;
+import at.itec.fbacher.flowsim.events.TopologyFinishedEvent;
 import at.itec.fbacher.flowsim.model.Scenario;
 import at.itec.fbacher.flowsim.model.ScenarioFileParser;
 import at.itec.fbacher.flowsim.sim.Simulator;
-
-import java.io.File;
 
 /**
  * Created by florian on 02.09.2015.
@@ -26,5 +25,7 @@ public class ImportedScenario implements Scenario {
     @Override
     public void initialize() {
         scenarioFileParser.parseFile();
+        EventPublisher.getInstance().publishEvent(new TopologyFinishedEvent());
+        Simulator.getInstance().setSimulationLengthInSeconds(1000);
     }
 }

@@ -35,6 +35,13 @@ public class Node {
         addFace(appFace);
     }
 
+    public Node(String id) {
+        this.id = id;
+        pit.setNode(this);
+        Face appFace = new Face();
+        addFace(appFace);
+    }
+
     public App getApp() {
         return app;
     }
@@ -113,7 +120,8 @@ public class Node {
         if (pit.getPit().get(interest.getName()) != null) { //check if interest has been satisfied
             pit.sentInterest(interest, outFace);
             if (outFace.isAppFace()) {
-                app.onInterest(interest);
+                if (app != null)
+                    app.onInterest(interest);
             } else {
                 outFace.sendInterest(interest);
             }

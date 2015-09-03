@@ -1,0 +1,123 @@
+# defining a network design problem
+
+Client:
+Client0
+Client1
+Client2
+Client3
+Client4
+Client5
+Client6
+Client7
+Client8
+Client9
+Client10
+Client11
+Client12
+Client13
+Client14
+Client15
+Client16
+Client17
+
+Server:
+Server0
+Server1
+Server2
+
+Router:
+Router0
+Router1
+Router2
+Router3
+Router4
+Router5
+Router6
+Router7
+Router8
+Router9
+Router10
+Router11
+Router12
+
+
+# content should have the following form:
+# ContentName,bitrate1, bitrate2, ..., bitrateN
+Content:
+Content0,46, 89, 131, 178, 222, 263, 334, 396, 522, 595, 791, 1032, 1244, 1546, 2133, 2484, 3078, 3526, 3840, 4219
+Content1,46, 89, 131, 178, 222, 263, 334, 396, 522, 595, 791, 1032, 1244, 1546, 2133, 2484, 3078, 3526, 3840, 4219
+Content2,46, 89, 131, 178, 222, 263, 334, 396, 522, 595, 791, 1032, 1244, 1546, 2133, 2484, 3078, 3526, 3840, 4219
+Content3,46, 89, 131, 178, 222, 263, 334, 396, 522, 595, 791, 1032, 1244, 1546, 2133, 2484, 3078, 3526, 3840, 4219
+Content4,46, 89, 131, 178, 222, 263, 334, 396, 522, 595, 791, 1032, 1244, 1546, 2133, 2484, 3078, 3526, 3840, 4219
+Content5,46, 89, 131, 178, 222, 263, 334, 396, 522, 595, 791, 1032, 1244, 1546, 2133, 2484, 3078, 3526, 3840, 4219
+Content6,46, 89, 131, 178, 222, 263, 334, 396, 522, 595, 791, 1032, 1244, 1546, 2133, 2484, 3078, 3526, 3840, 4219
+Content7,46, 89, 131, 178, 222, 263, 334, 396, 522, 595, 791, 1032, 1244, 1546, 2133, 2484, 3078, 3526, 3840, 4219
+
+Edge:
+Router1, Client0, 5100
+Router1, Client1, 4000
+Router1, Client2, 3500
+Router2, Client3, 5700
+Router2, Client4, 3850
+Router2, Client5, 2100
+Router2, Client6, 1500
+Router3, Client7, 950
+Router3, Client8, 1500
+Router3, Client9, 2780
+Router3, Client10, 1250
+Router4, Client11, 5700
+Router4, Client12, 3700
+Router4, Client13, 1050
+Router4, Client14, 800
+Router4, Client15, 1500
+Router4, Client16, 900
+Router5, Client17, 5000
+Router2, Router1, 10000
+Router6, Router1, 10000
+Router2, Router6, 10000
+Router2, Router7, 10000
+Router6, Router7, 10000
+Router3, Router7, 10000
+Router6, Router10, 10000
+Router7, Router10, 10000
+Router7, Router8, 10000
+Router4, Router7, 10000
+Router4, Router8, 10000
+Router9, Router8, 10000
+Router4, Router0, 10000
+Router0, Router9, 10000
+Router5, Router9, 10000
+Router9, Router12, 10000
+Router6, Router11, 10000
+Server0, Router11, 10000
+Server1, Router10, 10000
+Server2, Router12, 10000
+Content0, Server0, 100000
+Content1, Server1, 100000
+Content2, Server2, 100000
+Content3, Server0, 100000
+Content4, Server1, 100000
+Content5, Server2, 100000
+Content6, Server0, 100000
+Content7, Server1, 100000
+
+
+Demand:
+Client0, Content0, 10000
+Client1, Content1, 10000
+Client2, Content2, 10000
+Client3, Content3, 10000
+Client4, Content4, 10000
+Client5, Content5, 10000
+Client6, Content6, 10000
+Client7, Content7, 10000
+Client8, Content0, 10000
+Client9, Content1, 10000
+Client10, Content2, 1000000
+Client11, Content3, 10000
+Client12, Content0, 10000
+Client13, Content1, 10000
+Client14, Content0, 10000
+Client15, Content1, 10000
+Client16, Content0, 10000
+Client17, Content0, 10000
