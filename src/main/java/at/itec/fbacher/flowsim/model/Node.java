@@ -79,7 +79,7 @@ public class Node {
     }
 
     public void onReceiveInterest(Interest interest, Face inFace) {
-        Logger.getInstance().log(Simulator.getInstance().getCurrentTime() + " Node " + getId() + " received Interest " + interest.getName());
+        Logger.getInstance().log("Node " + getId() + " received Interest " + interest.getName());
         PitEntry pitEntry = pit.addPitEntry(interest, inFace);
         if (pitEntry == null) {
             return;
@@ -94,7 +94,7 @@ public class Node {
     }
 
     public void onReceiveData(Data data, Face inFace) {
-        System.out.println(Simulator.getInstance().getCurrentTime() + " Node " + getId() + " received Data " + data.getName());
+        Logger.getInstance().log("Node " + getId() + " received Data " + data.getName());
         contentStore.onData(data);
         PitEntry pitEntry = pit.getPit().get(data.getName());
         if (pitEntry != null) {

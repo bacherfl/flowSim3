@@ -1,5 +1,6 @@
 package at.itec.fbacher.flowsim.extensions.app;
 
+import at.itec.fbacher.flowsim.log.Logger;
 import at.itec.fbacher.flowsim.model.app.App;
 import at.itec.fbacher.flowsim.model.Data;
 import at.itec.fbacher.flowsim.model.Interest;
@@ -23,7 +24,7 @@ public class SimpleProducer extends App {
 
     @Override
     public void onInterest(Interest interest) {
-        System.out.println(Simulator.getInstance().getCurrentTime() + " [App] Node " + node.getId() + " received interest " + interest.getName());
+        Logger.getInstance().log("[App] Node " + node.getId() + " received interest " + interest.getName());
         if (interest.getName().startsWith(prefix)) {
             Data data = new Data();
             data.setSize(4096);

@@ -112,4 +112,8 @@ public class Simulator extends Observable {
     public double getSpeedupFactor() {
         return speedupFactor;
     }
+
+    public void reset() {
+        currentTime = 0;
+    }
 }

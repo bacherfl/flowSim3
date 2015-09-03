@@ -114,7 +114,7 @@ public class GraphPresenter implements Initializable, EventSubscriber {
                         updateBandwidthOnGraphEdges();
 
                     });
-                    Thread.sleep(200);
+                    Thread.sleep(500);
                 }
                 return null;
             }
@@ -128,7 +128,7 @@ public class GraphPresenter implements Initializable, EventSubscriber {
         sentInterests.keySet().forEach(id -> {
             String[] split = id.split("-");
 
-            double dataBandwidth = (sentData.get(id).get() * 5 * Data.DATA_SIZE * 8) /
+            double dataBandwidth = (sentData.get(id).get() * 2 * Data.DATA_SIZE * 8) /
                     Simulator.getInstance().getSpeedupFactor();
             double interestBandwidth = (sentInterests.get(id).get() * 5 * Interest.INTEREST_SIZE * 8) /
                     Simulator.getInstance().getSpeedupFactor();

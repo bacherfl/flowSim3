@@ -34,6 +34,6 @@ public class Logger {
         double milliSeconds = formattedTime.getMilliSeconds();
         logMessageBuilder.append("[" + seconds + ":" + milliSeconds + "] - ").append(message);
         LogUpdateEvent logUpdateEvent = new LogUpdateEvent(logMessageBuilder.toString());
-        EventPublisher.getInstance().publishEvent(logUpdateEvent);
+        //EventPublisher.getInstance().publishEvent(logUpdateEvent);
     }
 }

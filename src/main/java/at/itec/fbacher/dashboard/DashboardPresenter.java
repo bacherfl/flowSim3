@@ -94,6 +94,7 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
     private boolean simulationRunning;
 
     private List<Control> simControlElements = new ArrayList<>();
+    private boolean started = false;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -179,6 +180,12 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
     }
 
     public void launch() {
+        //if (started) {
+        //    currentScenario.initialize();
+        //    Simulator.getInstance().reset();
+        //}
+        started = true;
+        launch.setDisable(true);
         Thread t = new Thread(() -> {
             currentScenario.run();
         });
@@ -196,7 +203,7 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
                         FormattedTime ctf = Simulator.getInstance().getCurrentTimeFormatted();
                         currentTimeLabel.setText(ctf.getSeconds() + ":" + ctf.getMilliSeconds());
                     });
-                    Thread.sleep(20);
+                    Thread.sleep(200);
                 }
                 return null;
             }
