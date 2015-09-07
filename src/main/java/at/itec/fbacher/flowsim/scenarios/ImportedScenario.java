@@ -26,6 +26,6 @@ public class ImportedScenario implements Scenario {
     public void initialize() {
         scenarioFileParser.parseFile();
         EventPublisher.getInstance().publishEvent(new TopologyFinishedEvent());
-        Simulator.getInstance().setSimulationLengthInSeconds(1000);
+        Simulator.getInstance().setSimulationLengthInSeconds(300);
     }
 }

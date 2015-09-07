@@ -29,4 +29,10 @@ public class LearningStrategy extends BroadcastStrategy {
         super.OnData(data, inFace, pitEntry);
         fib.addFibEntry(data.getPrefix(), inFace, 0.0);
     }
+
+    @Override
+    public void onTimedOutInterest(Interest interest, PitEntry pitEntry) {
+        System.out.println("Interest timeout");
+        fib.deleteFibEntry(interest.getPrefix());
+    }
 }

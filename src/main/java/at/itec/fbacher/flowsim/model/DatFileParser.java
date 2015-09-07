@@ -2,6 +2,7 @@ package at.itec.fbacher.flowsim.model;
 
 import at.itec.fbacher.flowsim.extensions.app.SimpleConsumer;
 import at.itec.fbacher.flowsim.extensions.app.SimpleProducer;
+import at.itec.fbacher.flowsim.extensions.strategies.BroadcastStrategy;
 import at.itec.fbacher.flowsim.extensions.strategies.LearningStrategy;
 import at.itec.fbacher.flowsim.model.topology.TopologyHelper;
 
@@ -72,6 +73,11 @@ public class DatFileParser implements ScenarioFileParser {
 
                 parseLine(line);
             }
+            nodes.forEach(node -> {
+                if (node.getApp() == null) {
+                    node.setApp(new SimpleConsumer());
+                }
+            });
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -121,11 +127,18 @@ public class DatFileParser implements ScenarioFileParser {
                 topologyHelper.addLink(node1, node2, bandwidth, 10, 1.0);
             }
         } else {
-            SimpleProducer producer = new SimpleProducer("/" + split[0].trim());
+
             Node serverNode = nodes.stream().filter(node -> node.getId().equals(split[1].trim())).findFirst().get();
             if (serverNode != null) {
-                serverNode.setApp(producer);
-                producer.startAt(1);
+                SimpleProducer producer;
+                if (serverNode.getApp() == null) {
+                    producer = new SimpleProducer();
+                    serverNode.setApp(producer);
+                    producer.startAt(1);
+                } else {
+                    producer = (SimpleProducer) serverNode.getApp();
+                }
+                producer.getPrefixes().add("/" + split[0].trim());
             }
         }
     }

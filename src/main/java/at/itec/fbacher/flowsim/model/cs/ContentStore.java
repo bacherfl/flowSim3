@@ -12,7 +12,7 @@ import java.util.TreeMap;
  */
 public class ContentStore {
 
-    private int maxSize = 100; //100 items per CS
+    private int maxSize = 10; //100 items per CS
     private Map<String, ContentStoreEntry> contentStore = new TreeMap<>();
 
     public Data getItem(Interest interest) {

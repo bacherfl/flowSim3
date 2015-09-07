@@ -29,8 +29,6 @@ public class ForwardingInformationBase {
     }
 
     public void addFibEntry(String prefix, Face face, double cost) {
-        FibEntry fibEntry = new FibEntry(face, 0.0);
-
         List<FibEntry> entries;
 
         if (!fib.containsKey(prefix)) {
@@ -50,9 +48,15 @@ public class ForwardingInformationBase {
         }
     }
 
+    public void deleteFibEntry(String prefix) {
+        if (fib.containsKey(prefix)) {
+            fib.remove(prefix);
+        }
+    }
+
     public List<FibEntry> getMatchingFibEntries(String prefix) {
 
-        int maxMatch = 0;
+        int maxMatch = 1;
         final List<FibEntry>[] ret = new List[]{null};
         fib.keySet().stream().forEach(prefixKey -> {
             String[] prefixKeyArray = prefixKey.split("/");

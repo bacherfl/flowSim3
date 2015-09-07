@@ -17,6 +17,7 @@ public class SimpleConsumer extends App {
     private String prefix;
 
     private int chunkNr = 0;
+    private int receivedInterests = 0;
 
     private long interval = 10000;  // 1 Interest/s
     private int nInterests = 100000;
@@ -48,9 +49,9 @@ public class SimpleConsumer extends App {
         Interest interest = new Interest();
         interest.setNonce((int) (Math.random() * 1000));
         interest.setName(prefix + "%" + chunkNr++);
-        interest.setTimeout(5000);
+        interest.setTimeout(500000);
         interest.setSize(50);
-        Logger.getInstance().log("[App] Node " + node.getId() + " sending interest " + interest.getName());
+        //Logger.getInstance().log("[App] Node " + node.getId() + " sending interest " + interest.getName());
         appFace.sendInterest(interest);
         if (chunkNr < nInterests)
             Scheduler.getInstance().scheduleEventIn(interval, this::sendNextInterest);
@@ -58,7 +59,7 @@ public class SimpleConsumer extends App {
 
     @Override
     public void onInterest(Interest interest) {
-        Logger.getInstance().log("[App] Node " + node.getId() + " received interest " + interest.getName());
+        //Logger.getInstance().log("[App] Node " + node.getId() + " received interest " + interest.getName());
         // Data data = new Data();
         // data.setSize(4096);
         // data.setName(interest.getName());
@@ -68,11 +69,12 @@ public class SimpleConsumer extends App {
     @Override
     public void onData(Data data) {
         Logger.getInstance().log(" [App] Node " + node.getId() + " received data " + data.getName());
+        receivedInterests++;
     }
 
     @Override
     public void onStopApplication() {
-
+        System.out.println("Satisfaction rate: " +  (receivedInterests + 0.0) / chunkNr + "(" + chunkNr + " sent Interests, received " + receivedInterests + ")");
     }
 
     public boolean isConsume() {

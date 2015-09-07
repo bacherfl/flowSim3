@@ -33,7 +33,8 @@ public class HelloScenario implements Scenario {
             } else if (node.getId().equals("2")) {
                 app = new SimpleConsumer(true, "/name");
             } else if (node.getId().equals("19") || node.getId().equals("16")) {
-                app = new SimpleProducer("/name");
+                app = new SimpleProducer();
+                ((SimpleProducer) app).getPrefixes().add("/name");
             } else {
                 app = new SimpleConsumer();
             }

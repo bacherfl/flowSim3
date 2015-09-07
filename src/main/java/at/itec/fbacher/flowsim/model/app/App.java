@@ -1,6 +1,10 @@
 package at.itec.fbacher.flowsim.model.app;
 
 
+import at.itec.fbacher.flowsim.events.ApplicationEvent;
+import at.itec.fbacher.flowsim.events.EventPublisher;
+import at.itec.fbacher.flowsim.events.EventSubscriber;
+import at.itec.fbacher.flowsim.events.SimulationFinishedEvent;
 import at.itec.fbacher.flowsim.model.Data;
 import at.itec.fbacher.flowsim.model.Face;
 import at.itec.fbacher.flowsim.model.Interest;
@@ -10,13 +14,14 @@ import at.itec.fbacher.flowsim.sim.Scheduler;
 /**
  * Created by florian on 13.08.2015.
  */
-public abstract class App {
+public abstract class App implements EventSubscriber {
 
     protected Face appFace = new Face();
     protected Node node;
 
     public App() {
         appFace.setApp(this);
+        EventPublisher.getInstance().register(this, SimulationFinishedEvent.class);
     }
 
     public void startAt(long when) {
@@ -47,5 +52,11 @@ public abstract class App {
 
     public void setNode(Node node) {
         this.node = node;
+    }
+
+    @Override
+    public void handleEvent(ApplicationEvent evt) {
+        if (evt instanceof SimulationFinishedEvent)
+            onStopApplication();
     }
 }

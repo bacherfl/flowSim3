@@ -78,8 +78,8 @@ public class Node {
         this.faces = faces;
     }
 
-    public void onReceiveInterest(Interest interest, Face inFace) {
-        Logger.getInstance().log("Node " + getId() + " received Interest " + interest.getName());
+    public synchronized void onReceiveInterest(Interest interest, Face inFace) {
+        //Logger.getInstance().log("Node " + getId() + " received Interest " + interest.getName());
         PitEntry pitEntry = pit.addPitEntry(interest, inFace);
         if (pitEntry == null) {
             return;
@@ -93,7 +93,7 @@ public class Node {
         forwardingStrategy.onInterest(interest, inFace, pitEntry);
     }
 
-    public void onReceiveData(Data data, Face inFace) {
+    public synchronized void onReceiveData(Data data, Face inFace) {
         Logger.getInstance().log("Node " + getId() + " received Data " + data.getName());
         contentStore.onData(data);
         PitEntry pitEntry = pit.getPit().get(data.getName());
@@ -103,7 +103,7 @@ public class Node {
         }
     }
 
-    private void sendOutData(Data data) {
+    private synchronized void sendOutData(Data data) {
         pit.getPit().get(data.getName()).getInRecords().keySet().forEach(face -> face.sendData(data));
         pit.clearPitEntry(data.getName());
     }
@@ -116,7 +116,7 @@ public class Node {
             forwardingStrategy.addFace(face);
     }
 
-    public void sendInterest(Interest interest, Face outFace) {
+    public synchronized void sendInterest(Interest interest, Face outFace) {
         if (pit.getPit().get(interest.getName()) != null) { //check if interest has been satisfied
             pit.sentInterest(interest, outFace);
             if (outFace.isAppFace()) {
@@ -128,11 +128,12 @@ public class Node {
         }
     }
 
-    public void sendData(Data data, Face outFace) {
+    public synchronized void sendData(Data data, Face outFace) {
         outFace.sendData(data);
     }
 
     public void onDroppedPacket(Packet packet, Face face) {
+        System.out.println("Dropped packet");
         forwardingStrategy.onDroppedPacket(packet, face);
     }
 

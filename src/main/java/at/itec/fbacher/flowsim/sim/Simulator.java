@@ -2,6 +2,7 @@ package at.itec.fbacher.flowsim.sim;
 
 
 import at.itec.fbacher.flowsim.events.EventPublisher;
+import at.itec.fbacher.flowsim.events.SimulationFinishedEvent;
 import at.itec.fbacher.flowsim.events.SimulationProceededEvent;
 
 import java.util.Observable;
@@ -43,6 +44,7 @@ public class Simulator extends Observable {
 
     public void stop() {
         running = false;
+        EventPublisher.getInstance().publishEvent(new SimulationFinishedEvent());
         if (onStopApplicationCallback != null)
             onStopApplicationCallback.execute();
     }

@@ -109,11 +109,7 @@ public class GraphPresenter implements Initializable, EventSubscriber {
             @Override
             public Void call() throws Exception {
                 while (simulationRunning) {
-                    Platform.runLater(() -> {
-
-                        updateBandwidthOnGraphEdges();
-
-                    });
+                    Platform.runLater(() -> updateBandwidthOnGraphEdges());
                     Thread.sleep(500);
                 }
                 return null;

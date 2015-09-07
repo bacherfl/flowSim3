@@ -120,6 +120,18 @@
         }
     }
 
+    function updateInterests2(bandwidths) {
+        bandwidths = JSON.parse(bandwidths);
+        for (var i = 0; i < bandwidths.length; i++) {
+            var entry = bandwidths[i];
+            if (entry.bandwidth == 0) {
+                edges.update({id: entry.id, color: '#2F75D5', arrows: {to: {enabled : false }}});
+            } else {
+                edges.update({id: entry.id, color: '#008800', arrows: {to: {enabled : true, scaleFactor: Math.min(Math.max(0.5, entry.bandwidth), 2.0) }}});
+            }
+        }
+    }
+
 </script>
 
 </body>

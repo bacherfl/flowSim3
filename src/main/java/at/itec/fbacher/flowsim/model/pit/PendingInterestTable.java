@@ -73,6 +73,9 @@ public class PendingInterestTable {
     }
 
     public void clearPitEntry(String name) {
+        PitEntry pitEntry = pit.get(name);
+        SimulationEvent unsatisfyEvent = timeoutEvents.get(pitEntry);
+        Scheduler.getInstance().cancelEvent(unsatisfyEvent);
         pit.remove(name);
     }
 }

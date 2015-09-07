@@ -28,12 +28,12 @@ public class Logger {
     }
 
     public void log(String message, LogLevel level) {
-        StringBuilder logMessageBuilder = new StringBuilder();
-        FormattedTime formattedTime = new FormattedTime().invoke();
-        long seconds = formattedTime.getSeconds();
-        double milliSeconds = formattedTime.getMilliSeconds();
-        logMessageBuilder.append("[" + seconds + ":" + milliSeconds + "] - ").append(message);
-        LogUpdateEvent logUpdateEvent = new LogUpdateEvent(logMessageBuilder.toString());
+        //StringBuilder logMessageBuilder = new StringBuilder();
+        //FormattedTime formattedTime = new FormattedTime().invoke();
+        //long seconds = formattedTime.getSeconds();
+        //double milliSeconds = formattedTime.getMilliSeconds();
+        //logMessageBuilder.append("[" + seconds + ":" + milliSeconds + "] - ").append(message);
+        //LogUpdateEvent logUpdateEvent = new LogUpdateEvent(logMessageBuilder.toString());
         //EventPublisher.getInstance().publishEvent(logUpdateEvent);
     }
 }
