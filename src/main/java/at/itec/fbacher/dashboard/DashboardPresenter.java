@@ -102,6 +102,7 @@ public class DashboardPresenter implements Initializable, EventSubscriber {
 
         List<String> scenarios = new ArrayList<>();
         scenarios.add("HelloScenario");
+        scenarios.add("RealWorldScenario");
 
         scenarios.forEach(scenarioName -> {
             MenuItem item = new MenuItem(scenarioName);

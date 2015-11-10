@@ -59,4 +59,8 @@ public abstract class App implements EventSubscriber {
         if (evt instanceof SimulationFinishedEvent)
             onStopApplication();
     }
+
+    public void sendInterest(Interest interest) {
+        appFace.sendInterest(interest);
+    }
 }

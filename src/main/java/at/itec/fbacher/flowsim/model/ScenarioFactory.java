@@ -2,6 +2,7 @@ package at.itec.fbacher.flowsim.model;
 
 
 import at.itec.fbacher.flowsim.scenarios.HelloScenario;
+import at.itec.fbacher.flowsim.scenarios.RealWorldScenario;
 import org.reflections.Reflections;
 
 /**
@@ -13,6 +14,8 @@ public class ScenarioFactory {
         Scenario scenario = null;
         if ("HelloScenario".equals(scenarioName)) {
             scenario = new HelloScenario();
+        } else if("RealWorldScenario".equals(scenarioName)) {
+            scenario = new RealWorldScenario();
         }
         return scenario;
     }

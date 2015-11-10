@@ -64,6 +64,18 @@ public class Scheduler implements Observer {
         return evt;
     }
 
+    public SimulationEvent scheduleEventInSeconds(long in, SimulationEvent evt) {
+        long when = Simulator.getInstance().getCurrentTime() + in * Simulator.SIMULATION_TICKS_PER_SECOND;
+        addSimulationEvent(when, evt);
+        return evt;
+    }
+
+    public SimulationEvent scheduleEventInMilliSeconds(long in, SimulationEvent evt) {
+        long when = Simulator.getInstance().getCurrentTime() + in * (Simulator.SIMULATION_TICKS_PER_SECOND / 1000);
+        addSimulationEvent(when, evt);
+        return evt;
+    }
+
     public void cancelEvent(SimulationEvent evt) {
         Optional<List<SimulationEvent>> simulationEvents = scheduledEvents
                 .values()
