@@ -67,6 +67,10 @@ public class Client extends App {
             active = false;
         }
 
+        if (appFace.getLink() == null) {
+            System.out.println("error");
+        }
+
         if (active) {
             PopularityItem contentItem = requestNextContentItem();
             ContentInfo contentInfo = new ContentInfo(contentItem.getContentName(), 30);
@@ -91,5 +95,9 @@ public class Client extends App {
             }
         }
         return contentItem;
+    }
+
+    public void setBandwidth(double bandwidth) {
+        this.bandwidth = bandwidth;
     }
 }

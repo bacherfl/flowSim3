@@ -5,6 +5,7 @@ import at.itec.fbacher.flowsim.events.TopologyFinishedEvent;
 import at.itec.fbacher.flowsim.extensions.app.Client;
 import at.itec.fbacher.flowsim.extensions.app.Producer;
 import at.itec.fbacher.flowsim.extensions.app.SimpleProducer;
+import at.itec.fbacher.flowsim.extensions.app.tg.ContentRepositoryManager;
 import at.itec.fbacher.flowsim.extensions.app.tg.SimulationSchedule;
 import at.itec.fbacher.flowsim.extensions.app.tg.traffic.TrafficStatistics;
 import at.itec.fbacher.flowsim.extensions.strategies.LearningStrategy;
@@ -33,16 +34,23 @@ public class RealWorldScenario implements Scenario {
         NodeContainer servers = new NodeContainer(3);
 
         clients.getNodes().forEach(clientNode -> {
-            clientNode.setApp(new Client());
+            Client client = new Client();
+            client.setBandwidth(10000 * 1024);
+            clientNode.setApp(client);
             clientNode.getApp().startAt(1);
             clientNode.setForwardingStrategy(new LearningStrategy());
         });
+
+        ContentRepositoryManager repositoryManager = new ContentRepositoryManager();
 
         servers.getNodes().forEach(serverNode -> {
             serverNode.setApp(new Producer());
             serverNode.getApp().startAt(1);
             serverNode.setForwardingStrategy(new LearningStrategy());
+            repositoryManager.getProducers().add((Producer) serverNode.getApp());
         });
+
+        repositoryManager.assignContentItems();
 
         routers.getNodes().forEach(routerNode -> routerNode.setForwardingStrategy(new LearningStrategy()));
 
@@ -63,6 +71,6 @@ public class RealWorldScenario implements Scenario {
         s.setSimulationLengthInSeconds(3600 * 24);
 
         //trigger the traffic statistics component
-        Scheduler.getInstance().scheduleEventInSeconds(3600, () -> TrafficStatistics.nextHour());
+        Scheduler.getInstance().scheduleEventInSeconds(10, () -> TrafficStatistics.nextHour());
     }
 }

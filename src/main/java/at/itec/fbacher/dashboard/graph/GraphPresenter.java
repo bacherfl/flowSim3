@@ -34,6 +34,8 @@ public class GraphPresenter implements Initializable, EventSubscriber {
     private Task<Void> updateGraphTask;
     private Thread updateGraphThread;
 
+    private long lastSimulatorTime = 0;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         EventPublisher.getInstance().register(this, LinkCreatedEvent.class);
@@ -124,10 +126,18 @@ public class GraphPresenter implements Initializable, EventSubscriber {
         sentInterests.keySet().forEach(id -> {
             String[] split = id.split("-");
 
+            long timeDelta = Simulator.getInstance().getCurrentTime() - lastSimulatorTime;
+            double passedTime = (timeDelta + 0.0) / Simulator.SIMULATION_TICKS_PER_SECOND;
+
+            //double dataBandwidth = (sentData.get(id).get() * 2 * Data.DATA_SIZE * 8) /
+            //        Simulator.getInstance().getSpeedupFactor();
+            //double interestBandwidth = (sentInterests.get(id).get() * 5 * Interest.INTEREST_SIZE * 8) /
+            //        Simulator.getInstance().getSpeedupFactor();
+
             double dataBandwidth = (sentData.get(id).get() * 2 * Data.DATA_SIZE * 8) /
-                    Simulator.getInstance().getSpeedupFactor();
+                    passedTime;
             double interestBandwidth = (sentInterests.get(id).get() * 5 * Interest.INTEREST_SIZE * 8) /
-                    Simulator.getInstance().getSpeedupFactor();
+                    passedTime;
 
             double bandwidth = dataBandwidth + interestBandwidth;
 

@@ -67,7 +67,7 @@ public class ForwardingInformationBase {
                     && (prefixArray[match].equalsIgnoreCase(prefixKeyArray[match]))) {
                 match ++;
             }
-            if (match > maxMatch) {
+            if (match == prefix.length()) {
                 ret[0] = fib.get(prefixKey);
             }
         });

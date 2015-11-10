@@ -1,5 +1,7 @@
 package at.itec.fbacher.flowsim.extensions.app.tg.traffic;
 
+import at.itec.fbacher.flowsim.events.EventPublisher;
+import at.itec.fbacher.flowsim.events.NextHourEvent;
 import at.itec.fbacher.flowsim.extensions.app.tg.popularity.PopularityItem;
 import at.itec.fbacher.flowsim.sim.Scheduler;
 
@@ -32,13 +34,14 @@ public class TrafficStatistics {
 
     public static void nextHour() {
         currentHour++;
+        EventPublisher.getInstance().publishEvent(new NextHourEvent());
         Scheduler.getInstance().scheduleEventInSeconds(3600, TrafficStatistics::nextHour);
     }
 
     public static List<PopularityItem> getPopularitiesForHour() {
         List<PopularityItem> result = new ArrayList<>();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("Hour-" + currentHour + "-top30.csv"));
+            BufferedReader reader = new BufferedReader(new FileReader("statistics/Hour-" + currentHour + "-top30.csv"));
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] split = line.split(";");

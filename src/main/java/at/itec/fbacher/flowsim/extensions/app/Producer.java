@@ -7,7 +7,8 @@ import at.itec.fbacher.flowsim.model.app.App;
 /**
  * Created by florian on 05.11.2015.
  */
-public class Producer extends App {
+public class Producer extends SimpleProducer {
+    /*
     @Override
     public void onStartApplication() {
 
@@ -27,4 +28,5 @@ public class Producer extends App {
     public void onStopApplication() {
 
     }
+    */
 }
