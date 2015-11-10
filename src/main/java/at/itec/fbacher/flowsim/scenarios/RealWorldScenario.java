@@ -29,13 +29,13 @@ public class RealWorldScenario implements Scenario {
     public void initialize() {
         Simulator s = Simulator.getInstance();
 
-        NodeContainer clients = new NodeContainer(10);
+        NodeContainer clients = new NodeContainer(30);
         NodeContainer routers = new NodeContainer(4);
-        NodeContainer servers = new NodeContainer(3);
+        NodeContainer servers = new NodeContainer(10);
 
         clients.getNodes().forEach(clientNode -> {
             Client client = new Client();
-            client.setBandwidth(10000 * 1024);
+            client.setBandwidth(30 * 1024);
             clientNode.setApp(client);
             clientNode.getApp().startAt(1);
             clientNode.setForwardingStrategy(new LearningStrategy());
