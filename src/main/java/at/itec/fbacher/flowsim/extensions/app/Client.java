@@ -18,6 +18,8 @@ import java.util.List;
 public class Client extends App {
     private double bandwidth = 10 * 1024*1024;
     private boolean active = false;
+    private NdnFileRequester ndnFileRequester;
+
     public Client() {
         EventPublisher.getInstance().register(this, NextHourEvent.class);
     }
@@ -67,15 +69,21 @@ public class Client extends App {
             active = false;
         }
 
+        System.out.println("Client " + getNode().getId() + " is now " + active);
+
         if (appFace.getLink() == null) {
             System.out.println("error");
         }
 
         if (active) {
-            PopularityItem contentItem = requestNextContentItem();
-            ContentInfo contentInfo = new ContentInfo(contentItem.getContentName(), 30);
-            NdnFileRequester ndnFileRequester = new NdnFileRequester(this, contentInfo, () -> {});
-            ndnFileRequester.doRequest();
+            if ((ndnFileRequester != null) && ndnFileRequester.isFinished()) {
+                ndnFileRequester.setFinishedCallback(() -> proceed());
+            } else {
+                PopularityItem contentItem = requestNextContentItem();
+                ContentInfo contentInfo = new ContentInfo(contentItem.getContentName(), 30);
+                ndnFileRequester = new NdnFileRequester(this, contentInfo, () -> { });
+                ndnFileRequester.doRequest();
+            }
         }
     }
 

@@ -13,7 +13,7 @@ import at.itec.fbacher.flowsim.sim.Simulator;
 public class NdnFileRequester {
     private final Client client;
     private ContentInfo contentInfo;
-    private final SimulationEvent finishedCallback;
+    private SimulationEvent finishedCallback;
     private final long intervalBetweenInterests;
     private int chunkNr = 0;
     private int nInterests;
@@ -41,5 +41,17 @@ public class NdnFileRequester {
         } else {
             finishedCallback.execute();
         }
+    }
+
+    public boolean isFinished() {
+        return chunkNr >= nInterests;
+    }
+
+    public SimulationEvent getFinishedCallback() {
+        return finishedCallback;
+    }
+
+    public void setFinishedCallback(SimulationEvent finishedCallback) {
+        this.finishedCallback = finishedCallback;
     }
 }

@@ -35,7 +35,7 @@ public class TrafficStatistics {
     public static void nextHour() {
         currentHour++;
         EventPublisher.getInstance().publishEvent(new NextHourEvent());
-        Scheduler.getInstance().scheduleEventInSeconds(3600, TrafficStatistics::nextHour);
+        Scheduler.getInstance().scheduleEventInSeconds(10, TrafficStatistics::nextHour);
     }
 
     public static List<PopularityItem> getPopularitiesForHour() {
