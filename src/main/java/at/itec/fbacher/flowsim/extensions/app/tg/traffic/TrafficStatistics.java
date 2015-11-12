@@ -33,7 +33,7 @@ public class TrafficStatistics {
     }
 
     public static void nextHour() {
-        currentHour++;
+        currentHour = (currentHour + 1) % 24;
         EventPublisher.getInstance().publishEvent(new NextHourEvent());
         Scheduler.getInstance().scheduleEventInSeconds(10, TrafficStatistics::nextHour);
     }

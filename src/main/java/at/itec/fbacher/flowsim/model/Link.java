@@ -9,7 +9,7 @@ import at.itec.fbacher.flowsim.sim.Scheduler;
  */
 public class Link {
 
-    public static final int DEFAULT_BANDWIDTH = 100000000;
+    public static final int DEFAULT_BANDWIDTH = 20 * 1024 * 1024;
     public static final int DEFAULT_DELAY = 100;
     public static final double DEFAULT_RELIABILITY = 1.0;
 

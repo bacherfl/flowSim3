@@ -16,7 +16,7 @@ import java.util.List;
  * Created by florian on 05.11.2015.
  */
 public class Client extends App {
-    private double bandwidth = 10 * 1024*1024;
+    private double bandwidth = 1 * 1024*1024;
     private boolean active = false;
     private NdnFileRequester ndnFileRequester;
 
@@ -69,19 +69,18 @@ public class Client extends App {
             active = false;
         }
 
-        System.out.println("Client " + getNode().getId() + " is now " + active);
-
         if (appFace.getLink() == null) {
             System.out.println("error");
         }
 
         if (active) {
-            if ((ndnFileRequester != null) && ndnFileRequester.isFinished()) {
+            if ((ndnFileRequester != null) && !ndnFileRequester.isFinished()) {
                 ndnFileRequester.setFinishedCallback(() -> proceed());
             } else {
                 PopularityItem contentItem = requestNextContentItem();
-                ContentInfo contentInfo = new ContentInfo(contentItem.getContentName(), 30);
-                ndnFileRequester = new NdnFileRequester(this, contentInfo, () -> { });
+                ContentInfo contentInfo = new ContentInfo(contentItem.getContentName(), 3);
+                ndnFileRequester = new NdnFileRequester(this, contentInfo,
+                        () -> System.out.println("finished requesting " + contentInfo.getContentName()));
                 ndnFileRequester.doRequest();
             }
         }

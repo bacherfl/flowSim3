@@ -141,7 +141,7 @@ public class GraphPresenter implements Initializable, EventSubscriber {
 
             double bandwidth = dataBandwidth + interestBandwidth;
 
-            double scaleFactor = (bandwidth + 0.0) / (1000000);
+            double scaleFactor = (bandwidth + 0.0) / (500000);
 
             String jsCmd = "updateInterests('" + split[0] + "', '" + split[1] + "', " + scaleFactor + ")";
             web.getEngine().executeScript(jsCmd);

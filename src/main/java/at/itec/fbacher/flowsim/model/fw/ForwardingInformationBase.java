@@ -55,8 +55,6 @@ public class ForwardingInformationBase {
     }
 
     public List<FibEntry> getMatchingFibEntries(String prefix) {
-
-        int maxMatch = 1;
         final List<FibEntry>[] ret = new List[]{null};
         fib.keySet().stream().forEach(prefixKey -> {
             String[] prefixKeyArray = prefixKey.split("/");

@@ -29,13 +29,13 @@ public class RealWorldScenario implements Scenario {
     public void initialize() {
         Simulator s = Simulator.getInstance();
 
-        NodeContainer clients = new NodeContainer(30);
+        NodeContainer clients = new NodeContainer(21);
         NodeContainer routers = new NodeContainer(4);
         NodeContainer servers = new NodeContainer(10);
 
         clients.getNodes().forEach(clientNode -> {
             Client client = new Client();
-            client.setBandwidth(30 * 1024);
+            client.setBandwidth(1 * 1024 * 1024);
             clientNode.setApp(client);
             clientNode.getApp().startAt(1);
             clientNode.setForwardingStrategy(new LearningStrategy());
@@ -71,6 +71,6 @@ public class RealWorldScenario implements Scenario {
         s.setSimulationLengthInSeconds(3600 * 24);
 
         //trigger the traffic statistics component
-        Scheduler.getInstance().scheduleEventInSeconds(10, () -> TrafficStatistics.nextHour());
+        Scheduler.getInstance().scheduleEventInSeconds(30, () -> TrafficStatistics.nextHour());
     }
 }
