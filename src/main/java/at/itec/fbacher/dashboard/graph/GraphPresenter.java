@@ -34,6 +34,8 @@ public class GraphPresenter implements Initializable, EventSubscriber {
     private Task<Void> updateGraphTask;
     private Thread updateGraphThread;
 
+    private long updateInterval = 10000;
+
     private long lastSimulatorTime = 0;
 
     @Override
@@ -112,7 +114,7 @@ public class GraphPresenter implements Initializable, EventSubscriber {
             public Void call() throws Exception {
                 while (simulationRunning) {
                     Platform.runLater(() -> updateBandwidthOnGraphEdges());
-                    Thread.sleep(500);
+                    Thread.sleep(updateInterval);
                 }
                 return null;
             }
@@ -144,7 +146,9 @@ public class GraphPresenter implements Initializable, EventSubscriber {
             double scaleFactor = (bandwidth + 0.0) / (500000);
 
             String jsCmd = "updateInterests('" + split[0] + "', '" + split[1] + "', " + scaleFactor + ")";
+
             web.getEngine().executeScript(jsCmd);
+
             sentInterests.get(id).set(0);
             sentData.get(id).set(0);
         });

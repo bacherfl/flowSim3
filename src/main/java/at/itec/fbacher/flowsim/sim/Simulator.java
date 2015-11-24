@@ -87,6 +87,10 @@ public class Simulator extends Observable {
         return currentTime;
     }
 
+    public double getCurrentTimeInSeconds() {
+        return (currentTime + 0.0) / SIMULATION_TICKS_PER_SECOND;
+    }
+
     public long getSimulationLengthInSeconds() {
         return simulationLength / SIMULATION_TICKS_PER_SECOND;
     }

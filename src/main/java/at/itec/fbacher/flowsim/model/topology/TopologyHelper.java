@@ -21,7 +21,7 @@ public class TopologyHelper {
     }
 
     public void addLink(Node n1, Node n2) {
-        if (linkExists(n1, n2))
+        if (linkExists(n1, n2) || n1.getId() == n2.getId())
             return;
 
         Face f1 = new Face();
@@ -42,7 +42,7 @@ public class TopologyHelper {
     }
 
     public void addLink(Node n1, Node n2, int bandwidth, int delay, double reliability) {
-        if (linkExists(n1, n2))
+        if (linkExists(n1, n2) || n1.getId() == n2.getId())
             return;
 
         Face f1 = new Face();

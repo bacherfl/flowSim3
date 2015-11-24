@@ -48,6 +48,7 @@ public class TrafficStatistics {
                 PopularityItem popularityItem = new PopularityItem(split[0], Double.parseDouble(split[1]));
                 result.add(popularityItem);
             }
+            result.remove(result.size() - 1);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

@@ -10,7 +10,13 @@ import at.itec.fbacher.flowsim.model.Data;
 import at.itec.fbacher.flowsim.model.Interest;
 import at.itec.fbacher.flowsim.model.app.App;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by florian on 05.11.2015.
@@ -20,12 +26,23 @@ public class Client extends App {
     private boolean active = false;
     private NdnFileRequester ndnFileRequester;
 
+    private ClientStatistics statistics;
+
+    private ReentrantLock lock = new ReentrantLock();
+
     public Client() {
         EventPublisher.getInstance().register(this, NextHourEvent.class);
     }
 
     @Override
     public void onStartApplication() {
+        try {
+            if (!Files.isDirectory(Paths.get("output"))) {
+                Files.createDirectory(Paths.get("output"));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         proceed();
     }
 
@@ -36,12 +53,26 @@ public class Client extends App {
 
     @Override
     public void onData(Data data) {
-
+        if (statistics != null) {
+            lock.lock();
+            statistics.onData(data);
+            lock.unlock();
+        }
     }
 
     @Override
     public void onStopApplication() {
 
+    }
+
+    @Override
+    public void sendInterest(Interest interest) {
+        super.sendInterest(interest);
+        if (statistics != null) {
+            lock.lock();
+            statistics.sentInterest(interest);
+            lock.unlock();
+        }
     }
 
     public double getBandwidth() {
@@ -60,6 +91,16 @@ public class Client extends App {
         proceed();
     }
 
+    private void logStats() {
+        //BufferedWriter writer = Files.newBufferedWriter(Paths.get())
+        if (statistics != null) {
+            lock.lock();
+            statistics.export();
+            statistics.reset();
+            lock.unlock();
+        }
+    }
+
     private void proceed() {
         double trafficLoadForHour = TrafficStatistics.getTrafficLoadForHour() + 0.2;
         double random = Math.random();
@@ -74,16 +115,29 @@ public class Client extends App {
         }
 
         if (active) {
-            if ((ndnFileRequester != null) && !ndnFileRequester.isFinished()) {
-                ndnFileRequester.setFinishedCallback(() -> proceed());
-            } else {
-                PopularityItem contentItem = requestNextContentItem();
-                ContentInfo contentInfo = new ContentInfo(contentItem.getContentName(), 3);
-                ndnFileRequester = new NdnFileRequester(this, contentInfo,
-                        () -> System.out.println("finished requesting " + contentInfo.getContentName()));
-                ndnFileRequester.doRequest();
+            if ((ndnFileRequester == null) || ndnFileRequester.isFinished()) {
+                requestContent();
             }
         }
+    }
+
+    private void requestContent() {
+        PopularityItem contentItem = requestNextContentItem();
+        if (contentItem == null) {
+            active = false; return;
+        }
+        if (statistics == null) {
+            statistics = new ClientStatistics("client-" + getNode().getId(), "csv", 5);  //measure bandwidth every 5s
+        }
+        ContentInfo contentInfo = new ContentInfo(contentItem.getContentName(), 0.5 * Math.random());
+        ndnFileRequester = new NdnFileRequester(this, contentInfo,
+                () -> requesterFinished());
+        ndnFileRequester.doRequest();
+    }
+
+    private void requesterFinished() {
+        logStats();
+        proceed();
     }
 
     private PopularityItem requestNextContentItem() {
