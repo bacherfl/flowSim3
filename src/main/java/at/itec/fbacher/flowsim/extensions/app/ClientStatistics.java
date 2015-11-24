@@ -5,6 +5,7 @@ import at.itec.fbacher.flowsim.events.EventPublisher;
 import at.itec.fbacher.flowsim.events.EventSubscriber;
 import at.itec.fbacher.flowsim.events.SimulationProceededEvent;
 import at.itec.fbacher.flowsim.extensions.ExporterFactory;
+import at.itec.fbacher.flowsim.extensions.SatisfactionLog;
 import at.itec.fbacher.flowsim.extensions.StatisticsExporter;
 import at.itec.fbacher.flowsim.model.Data;
 import at.itec.fbacher.flowsim.model.Interest;
@@ -27,6 +28,8 @@ public class ClientStatistics implements EventSubscriber {
 
     private int nSentInterests = 0;
     private int nSatisfiedInterests = 0;
+
+    private Map<String, SatisfactionLog> satsfactionRateMap = new HashMap<>();
 
     private double lastCheckpoint = 0;
     private int nSatisfiedInterestsTmp = 0;
@@ -82,7 +85,15 @@ public class ClientStatistics implements EventSubscriber {
 
     public void sentInterest(Interest interest) {
         sentInterests.put(interest.getName(), Simulator.getInstance().getCurrentTimeInSeconds());
-        nSentInterests++;
+
+        SatisfactionLog satisfactionLog = satsfactionRateMap.get(interest.getName());
+        if (satisfactionLog == null) {
+            satisfactionLog = new SatisfactionLog();
+            satisfactionLog.incrementSentInterests();
+            satsfactionRateMap.put(interest.getName(), satisfactionLog);
+        } else {
+            satisfactionLog.incrementSentInterests();
+        }
     }
 
     public void onData(Data data) {
@@ -92,9 +103,16 @@ public class ClientStatistics implements EventSubscriber {
         }
         Double delay = Simulator.getInstance().getCurrentTimeInSeconds() - sentTstamp;
         this.delay.addValue(delay);
-        nSatisfiedInterests++;
+
+        if (satsfactionRateMap.get(data.getName()) != null)
+            satsfactionRateMap.get(data.getName()).incrementSatisfiedInterests();
+
         nSatisfiedInterestsTmp++;   //for bandwidth calculation
         satisfactionRate = (nSatisfiedInterests + 0.0) / nSentInterests;
+
+        if (satisfactionRate > 1) {
+            System.out.println("Something smells wrong here...");
+        }
     }
 
     public void addBandwidthEntry() {
@@ -121,7 +139,7 @@ public class ClientStatistics implements EventSubscriber {
 
     public void export() {
         List<Double> values = new ArrayList<>();
-        values.add(satisfactionRate);
+        values.add(satsfactionRateMap.values().stream().mapToDouble(SatisfactionLog::getSatisfactionRate).average().getAsDouble());
         values.add(delay.getMean());
         values.add(delay.getPercentile(50));
         values.add(delay.getStandardDeviation());
@@ -135,8 +153,8 @@ public class ClientStatistics implements EventSubscriber {
     }
 
     public void reset() {
-        nSentInterests = 0;
-        nSatisfiedInterests = 0;
+        //nSentInterests = 0;
+        //nSatisfiedInterests = 0;
         delay = new DescriptiveStatistics();
     }
 }
