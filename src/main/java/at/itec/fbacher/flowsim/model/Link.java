@@ -9,7 +9,7 @@ import at.itec.fbacher.flowsim.sim.Scheduler;
  */
 public class Link {
 
-    public static final int DEFAULT_BANDWIDTH = 20 * 1024 * 1024;
+    public static final int DEFAULT_BANDWIDTH = 500 * 1024 /** 1024*/;
     public static final int DEFAULT_DELAY = 100;
     public static final double DEFAULT_RELIABILITY = 1.0;
 
@@ -29,6 +29,16 @@ public class Link {
         this.bandwidth = bandwidth;
         this.delay = delay;
         this.reliability = reliability;
+        this.f1 = f1;
+        this.f2 = f2;
+
+        this.f1.setLink(this);
+        this.f2.setLink(this);
+        initTokenBucket(bandwidth);
+    }
+
+    public Link(Face f1, Face f2, int bandwidth) {
+        this.bandwidth = bandwidth;
         this.f1 = f1;
         this.f2 = f2;
 

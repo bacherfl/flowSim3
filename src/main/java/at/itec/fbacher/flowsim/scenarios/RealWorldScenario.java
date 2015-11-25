@@ -1,6 +1,7 @@
 package at.itec.fbacher.flowsim.scenarios;
 
 import at.itec.fbacher.flowsim.events.*;
+import at.itec.fbacher.flowsim.extensions.PopularityStatisticsAggregator;
 import at.itec.fbacher.flowsim.extensions.app.Client;
 import at.itec.fbacher.flowsim.extensions.app.Producer;
 import at.itec.fbacher.flowsim.extensions.app.SimpleProducer;
@@ -32,14 +33,14 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
     public void initialize() {
         Simulator s = Simulator.getInstance();
 
-        NodeContainer clients =     new NodeContainer(10);
-        NodeContainer clients2 =    new NodeContainer(15);
-        NodeContainer routers =     new NodeContainer(10);
+        NodeContainer clients =     new NodeContainer(3);
+        NodeContainer clients2 =    new NodeContainer(5);
+        NodeContainer routers =     new NodeContainer(20);
         NodeContainer servers =     new NodeContainer(10);
 
         clients.getNodes().forEach(clientNode -> {
             Client client = new Client();
-            client.setBandwidth(10 * 1024);
+            client.setBandwidth(50 * 1024);
             clientNode.setApp(client);
             clientNode.getApp().startAt(1);
             clientNode.setForwardingStrategy(new LearningStrategy());
@@ -66,17 +67,22 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
 
         routers.getNodes().forEach(routerNode -> routerNode.setForwardingStrategy(new LearningStrategy()));
 
-
         //build topology
         TopologyHelper th = new TopologyHelper();
 
-        clients.getNodes().forEach(clientNode -> th.addLink(clientNode, routers.getNodes().get((int) (Math.random() * routers.getNodes().size()))));
-        clients2.getNodes().forEach(clientNode -> th.addLink(clientNode, routers.getNodes().get((int) (Math.random() * routers.getNodes().size()))));
+        clients.getNodes().forEach(
+                clientNode -> th.addLink(
+                        clientNode,
+                        routers.getNodes().get((int) (Math.random() * routers.getNodes().size()))));
+        clients2.getNodes().forEach(
+                clientNode -> th.addLink(clientNode,
+                        routers.getNodes().get((int) (Math.random() * routers.getNodes().size()))));
 
         //random node connections
         clients.getNodes().forEach(client -> {
-                    if (Math.random() > 0.5) {
-                        th.addLink(client, clients2.getNodes().get((int) (Math.random() * clients2.getNodes().size())));
+                    if (Math.random() > 0.05) {
+                        th.addLink(client,
+                                clients2.getNodes().get((int) (Math.random() * clients2.getNodes().size())));
                     }
                 }
         );
@@ -103,6 +109,8 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
 
         //trigger the traffic statistics component
         Scheduler.getInstance().scheduleEventInSeconds(30, () -> TrafficStatistics.nextHour());
+
+        PopularityStatisticsAggregator psa = new PopularityStatisticsAggregator(10);
     }
 
     @Override

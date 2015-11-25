@@ -1,6 +1,7 @@
 package at.itec.fbacher.flowsim.extensions.app;
 
 import at.itec.fbacher.flowsim.events.ApplicationEvent;
+import at.itec.fbacher.flowsim.events.ContentRequestedEvent;
 import at.itec.fbacher.flowsim.events.EventPublisher;
 import at.itec.fbacher.flowsim.events.NextHourEvent;
 import at.itec.fbacher.flowsim.extensions.app.tg.content.ContentInfo;
@@ -133,6 +134,7 @@ public class Client extends App {
         ndnFileRequester = new NdnFileRequester(this, contentInfo,
                 () -> requesterFinished());
         ndnFileRequester.doRequest();
+        EventPublisher.getInstance().publishEvent(new ContentRequestedEvent(contentInfo.getContentName()));
     }
 
     private void requesterFinished() {

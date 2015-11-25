@@ -53,4 +53,18 @@ public class TopologyHelper {
         links.add(link);
         EventPublisher.getInstance().publishEvent(new LinkCreatedEvent(link));
     }
+
+    public void addLink(Node n1, Node n2, int bandwidth) {
+        if (linkExists(n1, n2) || n1.getId() == n2.getId())
+            return;
+
+        Face f1 = new Face();
+        Face f2 = new Face();
+        Link link = new Link(f1, f2, bandwidth);
+        n1.addFace(f1);
+        n2.addFace(f2);
+        links.add(link);
+        EventPublisher.getInstance().publishEvent(new LinkCreatedEvent(link));
+    }
+
 }

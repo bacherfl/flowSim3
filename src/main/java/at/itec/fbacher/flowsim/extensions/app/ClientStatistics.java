@@ -109,10 +109,6 @@ public class ClientStatistics implements EventSubscriber {
 
         nSatisfiedInterestsTmp++;   //for bandwidth calculation
         satisfactionRate = (nSatisfiedInterests + 0.0) / nSentInterests;
-
-        if (satisfactionRate > 1) {
-            System.out.println("Something smells wrong here...");
-        }
     }
 
     public void addBandwidthEntry() {
@@ -120,8 +116,6 @@ public class ClientStatistics implements EventSubscriber {
                 (Simulator.getInstance().getCurrentTimeInSeconds() - lastCheckpoint);
 
         this.bandwidth.addValue(bandwidth);
-
-        //bandwidthSeriesExporter.exportStatistic()
 
         lastCheckpoint = Simulator.getInstance().getCurrentTimeInSeconds();
         nSatisfiedInterestsTmp = 0;

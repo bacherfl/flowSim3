@@ -23,6 +23,7 @@ public class NeuralNetTrafficPredictor implements TrafficPredictor {
             structure.setClassIndex(structure.numAttributes() - 1);
             classifier = new MultilayerPerceptron();
             classifier.buildClassifier(structure);
+
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
