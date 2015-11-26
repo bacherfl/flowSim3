@@ -33,14 +33,14 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
     public void initialize() {
         Simulator s = Simulator.getInstance();
 
-        NodeContainer clients =     new NodeContainer(3);
-        NodeContainer clients2 =    new NodeContainer(5);
+        NodeContainer clients =     new NodeContainer(15);
+        NodeContainer clients2 =    new NodeContainer(18);
         NodeContainer routers =     new NodeContainer(20);
         NodeContainer servers =     new NodeContainer(10);
 
         clients.getNodes().forEach(clientNode -> {
             Client client = new Client();
-            client.setBandwidth(50 * 1024);
+            client.setBandwidth(100 * 1024);
             clientNode.setApp(client);
             clientNode.getApp().startAt(1);
             clientNode.setForwardingStrategy(new LearningStrategy());
@@ -48,7 +48,7 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
 
         clients2.getNodes().forEach(clientNode -> {
             Client client = new Client();
-            client.setBandwidth(50 * 1024);
+            client.setBandwidth(100 * 1024);
             clientNode.setApp(client);
             clientNode.getApp().startAt(1);
             clientNode.setForwardingStrategy(new LearningStrategy());
@@ -80,7 +80,7 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
 
         //random node connections
         clients.getNodes().forEach(client -> {
-                    if (Math.random() > 0.05) {
+                    if (Math.random() > 0.5) {
                         th.addLink(client,
                                 clients2.getNodes().get((int) (Math.random() * clients2.getNodes().size())));
                     }
@@ -110,7 +110,7 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
         //trigger the traffic statistics component
         Scheduler.getInstance().scheduleEventInSeconds(30, () -> TrafficStatistics.nextHour());
 
-        PopularityStatisticsAggregator psa = new PopularityStatisticsAggregator(10);
+        PopularityStatisticsAggregator psa = new PopularityStatisticsAggregator(100);
     }
 
     @Override

@@ -103,7 +103,7 @@ public class Client extends App {
     }
 
     private void proceed() {
-        double trafficLoadForHour = TrafficStatistics.getTrafficLoadForHour() + 0.2;
+        double trafficLoadForHour = TrafficStatistics.getTrafficLoadForHour();
         double random = Math.random();
         if (random <= trafficLoadForHour) {
             active = true;

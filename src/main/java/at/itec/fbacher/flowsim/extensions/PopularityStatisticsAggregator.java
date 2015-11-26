@@ -39,7 +39,7 @@ public class PopularityStatisticsAggregator implements EventSubscriber {
     }
 
     private void initArffFile() {
-        BufferedWriter writer = null;
+        BufferedWriter writer;
         try {
             writer = Files.newBufferedWriter(Paths.get("statistics/popularityModel.arff"));
             writeHeader(writer);
@@ -67,6 +67,7 @@ public class PopularityStatisticsAggregator implements EventSubscriber {
 
     private void calculatePopularityValues() {
         int totalRequests = nRequestsMap.values().stream().mapToInt(AtomicInteger::get).sum();
+        System.out.println("popularities:");
         nRequestsMap.keySet().forEach(contentId -> {
             double popularity = (nRequestsMap.get(contentId).get() + 0.0) / totalRequests;
 
@@ -79,8 +80,9 @@ public class PopularityStatisticsAggregator implements EventSubscriber {
                 statisticsEntry = statisticsEntryMap.get(contentId);
                 statisticsEntry.pushPopularityValue(popularity, () -> writeArffLine(statisticsEntry));
             }
+            System.out.println(contentId + ": " + popularity);
         });
-
+        System.out.println("----------------");
         nRequestsMap.clear();
     }
 
@@ -92,7 +94,7 @@ public class PopularityStatisticsAggregator implements EventSubscriber {
         try {
             Files.copy(Paths.get("statistics/popularityModel.arff"), Paths.get("statistics/popularityModelTmp.arff"));
 
-            BufferedWriter writer = null;
+            BufferedWriter writer;
             writer = Files.newBufferedWriter(
                     Paths.get("statistics/popularityModelTmp.arff"),
                     StandardOpenOption.APPEND);
@@ -104,7 +106,7 @@ public class PopularityStatisticsAggregator implements EventSubscriber {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Instances data = null;
+        Instances data;
         try {
             data = new Instances(new BufferedReader(new
                     FileReader("statistics/popularityModelTmp.arff")));
