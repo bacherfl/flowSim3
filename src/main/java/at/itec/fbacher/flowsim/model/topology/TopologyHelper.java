@@ -2,13 +2,12 @@ package at.itec.fbacher.flowsim.model.topology;
 
 import at.itec.fbacher.flowsim.events.EventPublisher;
 import at.itec.fbacher.flowsim.events.LinkCreatedEvent;
+import at.itec.fbacher.flowsim.extensions.SDNController;
 import at.itec.fbacher.flowsim.model.Face;
 import at.itec.fbacher.flowsim.model.Link;
 import at.itec.fbacher.flowsim.model.Node;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by florian on 12.08.2015.

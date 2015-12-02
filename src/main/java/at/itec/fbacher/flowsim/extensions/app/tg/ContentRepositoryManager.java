@@ -1,5 +1,7 @@
 package at.itec.fbacher.flowsim.extensions.app.tg;
 
+import at.itec.fbacher.flowsim.events.ContentAssignedEvent;
+import at.itec.fbacher.flowsim.events.EventPublisher;
 import at.itec.fbacher.flowsim.extensions.app.Producer;
 import at.itec.fbacher.flowsim.extensions.app.tg.content.ContentInfo;
 import at.itec.fbacher.flowsim.model.topology.NodeContainer;
@@ -53,7 +55,9 @@ public class ContentRepositoryManager {
     public void assignContentItems() {
         final int[] i = {0};
         contentInfos.forEach(contentInfo -> {
-            producers.get(i[0]).getPrefixes().add(contentInfo.getContentName());
+            Producer producer = producers.get(i[0]);
+            producer.getPrefixes().add(contentInfo.getContentName());
+            EventPublisher.getInstance().publishEvent(new ContentAssignedEvent(producer, contentInfo));
             i[0] = (i[0] + 1) % producers.size();
         });
     }

@@ -6,7 +6,6 @@ import at.itec.fbacher.flowsim.model.cs.ContentStore;
 import at.itec.fbacher.flowsim.model.fw.ForwardingStrategy;
 import at.itec.fbacher.flowsim.model.pit.PendingInterestTable;
 import at.itec.fbacher.flowsim.model.pit.PitEntry;
-import at.itec.fbacher.flowsim.sim.Simulator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +97,7 @@ public class Node {
         contentStore.onData(data);
         PitEntry pitEntry = pit.getPit().get(data.getName());
         if (pitEntry != null) {
-            forwardingStrategy.OnData(data, inFace, pitEntry);
+            forwardingStrategy.onData(data, inFace, pitEntry);
             sendOutData(data);
         }
     }

@@ -6,6 +6,7 @@ import at.itec.fbacher.flowsim.model.fw.ForwardingStrategy;
 import at.itec.fbacher.flowsim.model.pit.PitEntry;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -15,14 +16,11 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class SDNControlledStrategy extends ForwardingStrategy {
 
-    FlowTableManager flowTableManager;
+    FlowTableManager flowTableManager = new FlowTableManager();
 
-    Map<String, FlowEntry> flowTable;
-
-    Map<Integer, Map<String, TokenBucket>> qosQueues;
-    Map<Integer, TokenBucket> aggregateQosQueues;
-    Map<Integer, Boolean> qosQueueInitialized;
-    Map<String, Integer> pitTable;
+    Map<Integer, Map<String, TokenBucket>> qosQueues = new HashMap<>();
+    Map<Integer, TokenBucket> aggregateQosQueues = new HashMap<>();
+    Map<Integer, Boolean> qosQueueInitialized = new HashMap<>();
 
 
     boolean initialized;
@@ -40,54 +38,52 @@ public class SDNControlledStrategy extends ForwardingStrategy {
             outFace = getFaceFromSDNController(interest, inFace.getFaceId());
         }
 
-        if (outFace != null) {
-            String prefix = interest.getPrefix();
-            if (outFace.getFaceId() == fib.getFaces().size() - 1) {
+        //we're on the target node where the prefix is available --> forward to app face
+        if (outFace == null) {
+            sendInterest(interest, node.getAppFace());
+        }
+
+        String prefix = interest.getPrefix();
+        if (outFace.getFaceId() == fib.getFaces().size() - 1) {
+            sendInterest(interest, outFace);
+        }
+
+        else if (hasQueue(outFace.getFaceId(), prefix)) {
+            if (tryConsumeQueueToken(outFace.getFaceId(), prefix)) {
                 sendInterest(interest, outFace);
             }
+            else {
+                boolean tryForwarding = true;
+                while (tryForwarding) {
+                    exclude.add(outFace.getFaceId());
+                    outFace = selectFaceFromLocalFib(interest, exclude);
+                    if (outFace == null) {
+                        break;
+                    } else {
+                        if (outFace.getFaceId() == fib.getFaces().size() - 1) {
+                            tryForwarding = false;
+                            sendInterest(interest, outFace);
+                        }
 
-            else if (hasQueue(outFace.getFaceId(), prefix)) {
-                if (tryConsumeQueueToken(outFace.getFaceId(), prefix)) {
-                    sendInterest(interest, outFace);
-                }
-                else {
-                    boolean tryForwarding = true;
-                    while (tryForwarding) {
-                        exclude.add(outFace.getFaceId());
-                        outFace = selectFaceFromLocalFib(interest, exclude);
-                        if (outFace == null) {
-                            break;
-                        } else {
-                            if (outFace.getFaceId() == fib.getFaces().size() - 1) {
+                        else if (hasQueue(outFace.getFaceId(), prefix)) {
+                            if (tryConsumeQueueToken(outFace.getFaceId(), prefix)) {
                                 tryForwarding = false;
                                 sendInterest(interest, outFace);
-                            }
-
-                            else if (hasQueue(outFace.getFaceId(), prefix)) {
-                                if (tryConsumeQueueToken(outFace.getFaceId(), prefix)) {
-                                    tryForwarding = false;
-                                    sendInterest(interest, outFace);
-                                }
                             }
                         }
                     }
                 }
             }
-            else sendInterest(interest, outFace);
         }
-        //we're on the target node where the prefix is available --> forward to app face
-        else {
-            sendInterest(interest, node.getAppFace());
-        }
+        else sendInterest(interest, outFace);
     }
 
     @Override
-    public void OnData(Data data, Face inFace, PitEntry pitEntry) {
+    public void onData(Data data, Face inFace, PitEntry pitEntry) {
         String prefix = data.getPrefix();
         LinkRepairAction action = flowTableManager.interestSatisfied(prefix, inFace.getFaceId());
-        if (action.isRepair())
-        {
-            SDNController.linkRecovered(node.getId(), inFace.getFaceId(), prefix, action.getFailRate());
+        if (action.isRepair()) {
+            SDNController.getInstance().linkRecovered(node.getId(), inFace.getFaceId(), prefix, action.getFailRate());
         }
     }
 
@@ -127,12 +123,11 @@ public class SDNControlledStrategy extends ForwardingStrategy {
         flowTableManager.pushRule(prefix, faceId, cost);
     }
 
-    private Face getFaceFromSDNController(Interest interest, int inFaceId)
-    {
+    private Face getFaceFromSDNController(Interest interest, int inFaceId) {
         String prefix = interest.getPrefix();
 
         //let the controller calculate the route and push the rules to all nodes on the path to the target
-        SDNController.calculateRoutesForPrefix(node.getId(), prefix);
+        SDNController.getInstance().calculateRoutesForPrefix(node.getId(), prefix);
 
         List<Integer> exclude = new ArrayList<>();
         exclude.add(inFaceId);
@@ -147,9 +142,8 @@ public class SDNControlledStrategy extends ForwardingStrategy {
     {
         LinkRepairAction action = flowTableManager.interestUnsatisfied(prefix, faceId);
 
-        if (action.isRepair())
-        {
-            SDNController.linkFailure(node.getId(), faceId, prefix, action.getFailRate());
+        if (action.isRepair()) {
+            SDNController.getInstance().linkFailure(node.getId(), faceId, prefix, action.getFailRate());
         }
     }
 

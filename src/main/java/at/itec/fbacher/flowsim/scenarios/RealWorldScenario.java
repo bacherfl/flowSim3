@@ -2,6 +2,7 @@ package at.itec.fbacher.flowsim.scenarios;
 
 import at.itec.fbacher.flowsim.events.*;
 import at.itec.fbacher.flowsim.extensions.PopularityStatisticsAggregator;
+import at.itec.fbacher.flowsim.extensions.SDNController;
 import at.itec.fbacher.flowsim.extensions.app.Client;
 import at.itec.fbacher.flowsim.extensions.app.Producer;
 import at.itec.fbacher.flowsim.extensions.app.SimpleProducer;
@@ -9,6 +10,7 @@ import at.itec.fbacher.flowsim.extensions.app.tg.ContentRepositoryManager;
 import at.itec.fbacher.flowsim.extensions.app.tg.SimulationSchedule;
 import at.itec.fbacher.flowsim.extensions.app.tg.traffic.TrafficStatistics;
 import at.itec.fbacher.flowsim.extensions.strategies.LearningStrategy;
+import at.itec.fbacher.flowsim.extensions.strategies.sdn.SDNControlledStrategy;
 import at.itec.fbacher.flowsim.model.Scenario;
 import at.itec.fbacher.flowsim.model.topology.NodeContainer;
 import at.itec.fbacher.flowsim.model.topology.TopologyHelper;
@@ -31,6 +33,7 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
 
     @Override
     public void initialize() {
+        SDNController.getInstance().clearGraphDb();
         Simulator s = Simulator.getInstance();
 
         NodeContainer clients =     new NodeContainer(15);
@@ -63,9 +66,7 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
             repositoryManager.getProducers().add((Producer) serverNode.getApp());
         });
 
-        repositoryManager.assignContentItems();
-
-        routers.getNodes().forEach(routerNode -> routerNode.setForwardingStrategy(new LearningStrategy()));
+        routers.getNodes().forEach(routerNode -> routerNode.setForwardingStrategy(new SDNControlledStrategy()));
 
         //build topology
         TopologyHelper th = new TopologyHelper();
@@ -102,6 +103,8 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
 
         //tell the simulator about the finished topology
         EventPublisher.getInstance().publishEvent(new TopologyFinishedEvent());
+
+        repositoryManager.assignContentItems();
 
         s.setSimulationLengthInSeconds(3600);
 

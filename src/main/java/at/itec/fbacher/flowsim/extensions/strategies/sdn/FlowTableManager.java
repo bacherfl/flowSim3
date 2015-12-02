@@ -23,7 +23,7 @@ public class FlowTableManager {
     static final int FACE_STATUS_YELLOW = 1;
     static final int FACE_STATUS_RED = 2;
 
-    ReentrantLock lock;
+    ReentrantLock lock = new ReentrantLock();
 
     public void addFace(Face face) {
         faces.add(face);
@@ -126,7 +126,7 @@ public class FlowTableManager {
 
         lock.lock();
         //PrintFlowTableForPrefix(prefix);
-        if (flowTable.get(prefix).size() > 0)
+        if (flowTable.get(prefix) != null && flowTable.get(prefix).size() > 0)
         {
             double p = Math.random();
 
@@ -137,9 +137,11 @@ public class FlowTableManager {
             else {
                 face = getRandomFaceForPrefix(prefix, exclude);
             }
+            /*
             if (face == null) {
                 face = getRandomFaceForPrefix(prefix, exclude);
             }
+            */
         }
         lock.unlock();
         return face;
@@ -150,7 +152,10 @@ public class FlowTableManager {
         FlowEntry randomEntry = candidates.get((int) (Math.random() % candidates.size()));
         updateSelectedFlowEntry(randomEntry);
 
-        return faces.stream().filter(face -> face.getFaceId() == randomEntry.faceId).findFirst().get();
+        Optional<Face> outFace = faces.stream().filter(face -> face.getFaceId() == randomEntry.faceId).findFirst();
+        if (outFace.isPresent())
+            return outFace.get();
+        else return null;
     }
 
     private Face getFaceForPrefixBasedOnCost(String prefix, List<Integer> exclude) {

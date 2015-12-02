@@ -25,8 +25,8 @@ public class LearningStrategy extends BroadcastStrategy {
     }
 
     @Override
-    public void OnData(Data data, Face inFace, PitEntry pitEntry) {
-        super.OnData(data, inFace, pitEntry);
+    public void onData(Data data, Face inFace, PitEntry pitEntry) {
+        super.onData(data, inFace, pitEntry);
         fib.addFibEntry(data.getPrefix(), inFace, 0.0);
     }
 
