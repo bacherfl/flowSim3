@@ -5,11 +5,8 @@ import at.itec.fbacher.flowsim.extensions.PopularityStatisticsAggregator;
 import at.itec.fbacher.flowsim.extensions.SDNController;
 import at.itec.fbacher.flowsim.extensions.app.Client;
 import at.itec.fbacher.flowsim.extensions.app.Producer;
-import at.itec.fbacher.flowsim.extensions.app.SimpleProducer;
 import at.itec.fbacher.flowsim.extensions.app.tg.ContentRepositoryManager;
-import at.itec.fbacher.flowsim.extensions.app.tg.SimulationSchedule;
 import at.itec.fbacher.flowsim.extensions.app.tg.traffic.TrafficStatistics;
-import at.itec.fbacher.flowsim.extensions.strategies.LearningStrategy;
 import at.itec.fbacher.flowsim.extensions.strategies.sdn.SDNControlledStrategy;
 import at.itec.fbacher.flowsim.model.Scenario;
 import at.itec.fbacher.flowsim.model.topology.NodeContainer;
@@ -46,7 +43,7 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
             client.setBandwidth(100 * 1024);
             clientNode.setApp(client);
             clientNode.getApp().startAt(1);
-            clientNode.setForwardingStrategy(new LearningStrategy());
+            clientNode.setForwardingStrategy(new SDNControlledStrategy());
         });
 
         clients2.getNodes().forEach(clientNode -> {
@@ -54,7 +51,7 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
             client.setBandwidth(100 * 1024);
             clientNode.setApp(client);
             clientNode.getApp().startAt(1);
-            clientNode.setForwardingStrategy(new LearningStrategy());
+            clientNode.setForwardingStrategy(new SDNControlledStrategy());
         });
 
         ContentRepositoryManager repositoryManager = new ContentRepositoryManager();
@@ -62,7 +59,7 @@ public class RealWorldScenario implements Scenario, EventSubscriber {
         servers.getNodes().forEach(serverNode -> {
             serverNode.setApp(new Producer());
             serverNode.getApp().startAt(1);
-            serverNode.setForwardingStrategy(new LearningStrategy());
+            serverNode.setForwardingStrategy(new SDNControlledStrategy());
             repositoryManager.getProducers().add((Producer) serverNode.getApp());
         });
 

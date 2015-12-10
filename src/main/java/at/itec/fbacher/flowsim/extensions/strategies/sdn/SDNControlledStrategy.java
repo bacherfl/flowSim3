@@ -26,7 +26,28 @@ public class SDNControlledStrategy extends ForwardingStrategy {
     boolean initialized;
     boolean useAggregateQueuesPerFace;
 
-    ReentrantLock lock;
+    ReentrantLock lock = new ReentrantLock();
+
+    public SDNControlledStrategy() {
+    }
+
+    public SDNControlledStrategy(Node node) {
+        super(node);
+        SDNController.getInstance().registerForwarder(this);
+    }
+
+    @Override
+    public void setNode(Node node) {
+        super.setNode(node);
+        SDNController.getInstance().registerForwarder(this);
+    }
+
+    @Override
+    public void addFace(Face face) {
+        super.addFace(face);
+        qosQueues.put(face.getFaceId(), new HashMap<>());
+        flowTableManager.addFace(face);
+    }
 
     @Override
     public void onInterest(Interest interest, Face inFace, PitEntry pitEntry) {
@@ -41,6 +62,7 @@ public class SDNControlledStrategy extends ForwardingStrategy {
         //we're on the target node where the prefix is available --> forward to app face
         if (outFace == null) {
             sendInterest(interest, node.getAppFace());
+            return;
         }
 
         String prefix = interest.getPrefix();
@@ -138,8 +160,7 @@ public class SDNControlledStrategy extends ForwardingStrategy {
         return flowTableManager.getFaceForPrefix(interest.getPrefix(), exclude);
     }
 
-    private void logDroppedInterest(String prefix, int faceId)
-    {
+    private void logDroppedInterest(String prefix, int faceId) {
         LinkRepairAction action = flowTableManager.interestUnsatisfied(prefix, faceId);
 
         if (action.isRepair()) {
@@ -147,8 +168,7 @@ public class SDNControlledStrategy extends ForwardingStrategy {
         }
     }
 
-    boolean hasQueue(int faceId, String prefix)
-    {
+    boolean hasQueue(int faceId, String prefix) {
         if (useAggregateQueuesPerFace) {
             return qosQueueInitialized.get(faceId);
         } else {
@@ -156,8 +176,7 @@ public class SDNControlledStrategy extends ForwardingStrategy {
         }
     }
 
-    boolean tryConsumeQueueToken(int faceId, String prefix)
-    {
+    boolean tryConsumeQueueToken(int faceId, String prefix) {
         if (useAggregateQueuesPerFace) {
             //return aggregateQosQueues.get(faceId)
             return false;

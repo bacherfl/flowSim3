@@ -32,7 +32,7 @@ public class FlowTableManager {
     public List<String> getFlowsOfFace(Integer face) {
 
         return flowTable.keySet().stream().filter(
-                prefix -> flowTable.get(prefix).stream().filter(
+                prefix -> getFlowEntries(prefix).stream().filter(
                         fe -> fe.faceId == face).findFirst().isPresent())
                 .collect(Collectors.toList());
 
@@ -40,7 +40,7 @@ public class FlowTableManager {
 
     public void pushRule(String prefix, final int faceId, int cost) {
         lock.lock();
-        List<FlowEntry> flowEntries = flowTable.get(prefix);
+        List<FlowEntry> flowEntries = getFlowEntries(prefix);
 
         boolean found = flowEntries.stream()
                 .filter(flowEntry -> flowEntry.faceId == faceId)
@@ -61,26 +61,34 @@ public class FlowTableManager {
             addFlowEntry(prefix, fe);
             //flowTable[prefix].push_back(fe);
         }
-        if (flowTable.get(prefix).size() == 1) {
+        if (getFlowEntries(prefix).size() == 1) {
             //Simulator::Schedule(Seconds(10.0), &FlowTableManager::ClearTimedOutFlowEntry, this, prefix);
             Scheduler.getInstance().scheduleEventInSeconds(10, () -> clearTimedOutFlowEntry(prefix));
         }
         lock.unlock();
     }
 
+    private List<FlowEntry> getFlowEntries(String prefix) {
+        List<FlowEntry> result = flowTable.get(prefix);
+        if (result == null) {
+            flowTable.put(prefix, new ArrayList<>());
+        }
+        return flowTable.get(prefix);
+    }
+
     private void clearTimedOutFlowEntry(String prefix) {
         lock.lock();
-        flowTable.get(prefix).clear();
+        getFlowEntries(prefix).clear();
         lock.lock();
     }
 
     private void addFlowEntry(String prefix, FlowEntry fe) {
-        flowTable.get(prefix).add(fe);
+        getFlowEntries(prefix).add(fe);
     }
 
     boolean tryUpdateFaceProbabilities(String prefix)
     {
-        List<FlowEntry> flowEntries = flowTable.get(prefix);
+        List<FlowEntry> flowEntries = getFlowEntries(prefix);
         final double[] fractionToShift = new double[1];
         final double[] shifted = new double[1];
         final boolean[] success = {true};
@@ -126,7 +134,7 @@ public class FlowTableManager {
 
         lock.lock();
         //PrintFlowTableForPrefix(prefix);
-        if (flowTable.get(prefix) != null && flowTable.get(prefix).size() > 0)
+        if (getFlowEntries(prefix) != null && getFlowEntries(prefix).size() > 0)
         {
             double p = Math.random();
 
@@ -149,6 +157,8 @@ public class FlowTableManager {
 
     private Face getRandomFaceForPrefix(String prefix, List<Integer> exclude) {
         List<FlowEntry> candidates = getCandidateFaces(prefix, exclude);
+        if (candidates.size() == 0)
+            return null;
         FlowEntry randomEntry = candidates.get((int) (Math.random() % candidates.size()));
         updateSelectedFlowEntry(randomEntry);
 
@@ -182,13 +192,13 @@ public class FlowTableManager {
     }
 
     private List<FlowEntry> getCandidateFaces(String prefix, List<Integer> exclude) {
-        return flowTable.get(prefix).stream()
+        return getFlowEntries(prefix).stream()
                 .filter(fe -> !exclude.stream().filter(excl -> excl == fe.faceId).findFirst().isPresent())
                 .collect(Collectors.toList());
     }
 
     public LinkRepairAction interestUnsatisfied(String prefix, int faceId) {
-        List<FlowEntry> flowEntries = flowTable.get(prefix);
+        List<FlowEntry> flowEntries = getFlowEntries(prefix);
         LinkRepairAction action = new LinkRepairAction();
         action.setRepair(false);
 
@@ -218,7 +228,7 @@ public class FlowTableManager {
     }
 
     public LinkRepairAction interestSatisfied(String prefix, int faceId) {
-        List<FlowEntry> flowEntries = flowTable.get(prefix);
+        List<FlowEntry> flowEntries = getFlowEntries(prefix);
         LinkRepairAction action = new LinkRepairAction();
         action.setRepair(false);
 
@@ -242,5 +252,9 @@ public class FlowTableManager {
         });
 
         return action;
+    }
+
+    public void setFaces(List<Face> faces) {
+        this.faces = faces;
     }
 }
