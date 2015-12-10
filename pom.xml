@@ -199,6 +199,6 @@ limitations under the License.
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <neo4j.version>2.0.0-M06</neo4j.version>
+        <neo4j.version>2.3.1</neo4j.version>
     </properties>
 </project>

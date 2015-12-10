@@ -3,6 +3,11 @@ package at.itec.fbacher.flowsim.extensions;
 import at.itec.fbacher.flowsim.events.*;
 import at.itec.fbacher.flowsim.extensions.strategies.sdn.SDNControlledStrategy;
 import at.itec.fbacher.flowsim.model.Node;
+import org.neo4j.graphalgo.impl.util.PathImpl;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Result;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -22,9 +27,13 @@ public class SDNController implements EventSubscriber {
 
     private static SDNController instance;
 
+    private GraphDatabaseService db;
+
     private SDNController() {
         EventPublisher.getInstance().register(this, LinkCreatedEvent.class);
         EventPublisher.getInstance().register(this, ContentAssignedEvent.class);
+        EventPublisher.getInstance().register(this, SimulationFinishedEvent.class);
+        db = new GraphDatabaseFactory().newEmbeddedDatabase("flowsim.graphdb");
     }
 
     public static SDNController getInstance() {
@@ -39,65 +48,38 @@ public class SDNController implements EventSubscriber {
     }
 
     public void calculateRoutesForPrefix(String startNodeId, String prefix) {
-        StringBuilder statementBuilder = new StringBuilder();
+        try (Transaction tx = db.beginTx()) {
+            StringBuilder statementBuilder = new StringBuilder();
 
-        statementBuilder.append("MATCH (requester:Node{nodeId:'" + startNodeId + "'}), (server:Node)," +
-                "p = allShortestPaths((requester)-[:LINK*]->(server)) WHERE '" + prefix +
-                "' in server.prefixes AND NOT server.nodeId = '" + startNodeId + "' return p ORDER BY length(p) ASC");
-
-        ResultSet data = performNeo4jTrx(statementBuilder.toString());
-
-        List<Path> paths = parsePaths(data);
-
-        if (paths.size() == 0) {
-            statementBuilder = new StringBuilder();
             statementBuilder.append("MATCH (requester:Node{nodeId:'" + startNodeId + "'}), (server:Node)," +
-                    "p = allShortestPaths((requester)-[*]->(server)) WHERE '" + prefix +
-                    "' in server.prefixes AND NOT server.nodeId = '" + startNodeId +
-                    "' return p ORDER BY length(p) ASC LIMIT 1");
+                    "p = allShortestPaths((requester)-[:LINK*]->(server)) WHERE '" + prefix +
+                    "' in server.prefixes AND NOT server.nodeId = '" + startNodeId + "' return p ORDER BY length(p) ASC");
 
-            data = performNeo4jTrx(statementBuilder.toString());
-            paths = parsePaths(data);
-            for (int i = 0; i < paths.size(); i++)
-            {
-                pushPath(paths.get(i), prefix);
+            Result data = performNeo4jTrx(statementBuilder.toString());
+
+            List<Path> paths = parsePaths(data);
+
+            if (paths.size() == 0) {
+                statementBuilder = new StringBuilder();
+                statementBuilder.append("MATCH (requester:Node{nodeId:'" + startNodeId + "'}), (server:Node)," +
+                        "p = allShortestPaths((requester)-[*]->(server)) WHERE '" + prefix +
+                        "' in server.prefixes AND NOT server.nodeId = '" + startNodeId +
+                        "' return p ORDER BY length(p) ASC LIMIT 1");
+
+                data = performNeo4jTrx(statementBuilder.toString());
+                paths = parsePaths(data);
+                for (int i = 0; i < paths.size(); i++)
+                {
+                    pushPath(paths.get(i), prefix);
+                }
+            } else {
+                for (int i = 0; i < paths.size(); i++)
+                {
+                    pushPath(paths.get(i), prefix);
+                }
             }
-        } else {
-            for (int i = 0; i < paths.size(); i++)
-            {
-                pushPath(paths.get(i), prefix);
-            }
+            tx.success();
         }
-
-        /*
-        std::stringstream statement;
-
-        statement + "MATCH (requester:Node{nodeId:'" + startNodeId + "'}), (server:Node)," +
-                "p = allShortestPaths((requester)-[:LINK*]->(server)) WHERE '" + prefix + "' in server.prefixes AND NOT server.nodeId = '" + startNodeId + "' return p ORDER BY length(p) ASC";
-
-        std::string data = PerformNeo4jTrx(statement.toString(), curlCallback);
-
-        vector<Path *> paths = ParsePaths(data);
-
-        if (paths.size() == 0) {
-            statement.str("");
-            statement + "MATCH (requester:Node{nodeId:'" + startNodeId + "'}), (server:Node)," +
-                    "p = allShortestPaths((requester)-[*]->(server)) WHERE '" + prefix + "' in server.prefixes AND NOT server.nodeId = '" + startNodeId + "' return p ORDER BY length(p) ASC LIMIT 1";
-
-            std::string data = PerformNeo4jTrx(statement.toString(), curlCallback);
-            vector<Path *> paths = ParsePaths(data);
-            for (int i = 0; i < paths.size(); i++)
-            {
-                PushPath(paths.at(i), prefix);
-            }
-        }
-        else {
-            for (int i = 0; i < paths.size(); i++)
-            {
-                PushPath(paths.at(i), prefix);
-            }
-        }
-        */
     }
 
     private void pushPath(Path p, String prefix) {
@@ -127,8 +109,16 @@ public class SDNController implements EventSubscriber {
         }
     }
 
-    private ResultSet performNeo4jTrx(String statement) {
-        ResultSet rs = null;
+    private Result performNeo4jTrx(String statement) {
+        Result rs;
+
+        try (Transaction tx = db.beginTx()) {
+
+            rs = db.execute(statement.toString());
+            tx.success();
+        }
+        return rs;
+        /*
         // Make sure Neo4j Driver is registered
         try {
             Class.forName("org.neo4j.jdbc.Driver");
@@ -150,6 +140,7 @@ public class SDNController implements EventSubscriber {
             e.printStackTrace();
         }
         return rs;
+        */
     }
 
     public void linkFailure(String id, int faceId, String prefix, double failRate) {
@@ -160,40 +151,42 @@ public class SDNController implements EventSubscriber {
 
     }
 
-    public List<Path> parsePaths(ResultSet data) {
+    public List<Path> parsePaths(Result data) {
         System.out.println(data.toString());
 
         List<Path> paths = new ArrayList<>();
 
-        try {
-            while(data.next()) {
-                //Object object = data.getObject(0);
+        while(data.hasNext()) {
+            //Object object = data.getObject(0);
+            Map<String, Object> row = data.next();
 
-                List<Map<String, Object>> p = (List<Map<String, Object>>) data.getObject("p");
-                Path path = new Path();
-                for (int i = 0; i < p.size() - 2; i += 2) {
-                    Map<String, Object> startNode = p.get(i);
-                    Map<String, Object> face = p.get(i+1);
-                    Map<String, Object> endNode = p.get(i+2);
+            PathImpl p = (PathImpl) row.get("p");
+            Path path = new Path();
+            final int[] t = {0};
+            final PathEntry[] pe = new PathEntry[1];
+            p.iterator().forEachRemaining(propertyContainer -> {
+                if (t[0] == 0) {
+                    pe[0] = new PathEntry();
+                    pe[0].start = Integer.parseInt(propertyContainer.getProperty("nodeId").toString());
+                } else if (t[0] == 1) {
+                    pe[0].face = Integer.parseInt(propertyContainer.getProperty("startFace").toString());
+                    pe[0].bandwidth = Integer.parseInt(propertyContainer.getProperty("bandwidth").toString());
+                } else if (t[0] == 2) {
+                    pe[0].end = Integer.parseInt(propertyContainer.getProperty("nodeId").toString());
+                    path.pathEntries.add(pe[0]);
+                }
+                t[0] = t[0] + 1 % 3;
+            });
 
-                    PathEntry pe = new PathEntry();
-                    pe.start = Integer.parseInt(startNode.get("nodeId").toString());
-                    pe.face = Integer.parseInt(face.get("startFace").toString());
-                    pe.end = Integer.parseInt(endNode.get("nodeId").toString());
-                    pe.bandwidth = Integer.parseInt(face.get("bandwidth").toString());
-                    path.pathEntries.add(pe);
-                }
-                if (path.pathEntries.size() > 0) {
-                    PathEntry pe = new PathEntry();
-                    pe.start = path.pathEntries.get(path.pathEntries.size() - 1).end;
-                    pe.face = getNumberOfFacesForNode(pe.start);
-                    pe.end = -1;   //App Face
-                    path.pathEntries.add(pe);
-                }
-                paths.add(path);
+            if (path.pathEntries.size() > 0) {
+                PathEntry pe2 = new PathEntry();
+                pe2.start = path.pathEntries.get(path.pathEntries.size() - 1).end;
+                pe2.face = getNumberOfFacesForNode(pe2.start);
+                pe2.end = -1;   //App Face
+                path.pathEntries.add(pe2);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            paths.add(path);
+
         }
 
         return paths;
@@ -257,6 +250,8 @@ public class SDNController implements EventSubscriber {
         } else if (evt instanceof ContentAssignedEvent) {
             ContentAssignedEvent cae = (ContentAssignedEvent) evt;
             addOrigins(cae.getContentInfo().getContentName(), cae.getProducer().getNode().getId());
+        } else if (evt instanceof SimulationFinishedEvent) {
+            db.shutdown();
         }
     }
 
